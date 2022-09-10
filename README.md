@@ -24,3 +24,8 @@ poetry install
 ## Icons
 https://www.flaticon.com/
 
+
+# Gradient CSS
+https://cssgradient.io/
+
+

@@ -6,10 +6,12 @@
     bottom: 0;
     width: 5rem;
     padding: 2rem 1rem;
-    background-color: #1d0287; 
+    background-color: #1d0287;
     z-index: 1050;
     transition: width 0.1s ease-in-out;
 }
+/* background-color: #1d0287;  */
+
 
 
 /* when the user hovers on the sidebar, expand it */
@@ -23,8 +25,10 @@ width: 12rem;
     overflow: hidden;
     white-space: nowrap;
     color: #ffffff;
-    margin-left: 1rem;
-    align-content: bottom;
+    margin-left: 0.5rem;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+    /* align-content: bottom; */
     }
 
 
@@ -42,13 +46,25 @@ width: 12rem;
 
 
 /* when the sidebar is hovered, reveal the labels */
-
-
 .sidebar:hover .icon_and_text span {
     visibility: visible;
     opacity: 1;
     }
-    
+
+
+/* hide the navlink labels by default */
+.sidebar .icon_and_text h3 {
+    visibility: hidden;
+    opacity: 1;
+    transition: opacity 0.1s ease-in-out;
+    }
+
+/* when the sidebar is hovered, reveal the labels */
+.sidebar:hover .icon_and_text h3 {
+    visibility: visible;
+    opacity: 1;
+    }
+
 
 /* container for the sidebar header. make sure the contents don't wrap when
 * the sidebar is collapsed.

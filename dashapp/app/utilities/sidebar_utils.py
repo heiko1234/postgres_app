@@ -20,13 +20,12 @@ def icon_and_text(
         children=[
             html.Img(src='data:image/png;base64,{}'.format(encoded_img.decode(),
                 className="icon_and_text_img"),
-            style={"display": "flex", "height": "50px", "width": "50px"}
+            style={"display": "flex", "height": "60px", "width": "60px"}
             ),
-            html.H3("", style={"margin-left": "15px"}),
-            html.Span(text)
+            html.H3(text, style={"margin-left": "15px"})
         ], 
+        style={"display": "flex", "aling-center": "bottom"},
         href=href,
-        style={"display": "flex"}
     )
 
     return output

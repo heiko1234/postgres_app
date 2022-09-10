@@ -36,8 +36,9 @@ sidebar = html.Div(
         # html.Div(
         #     dcc.Link('2nd', href=dash.page_registry['pages.secondpage']['path'])
         #     ),
-        icon_and_text(id="side_user", text="Team", icon="people", href=dash.page_registry['pages.team']['path']),
-        icon_and_text(id="side_project", text="Projects", icon="solution", href=dash.page_registry['pages.projects']['path']),
+        icon_and_text(id="side_user", text="Team", icon="user", href=dash.page_registry['pages.team']['path']),
+        icon_and_text(id="side_project", text="Projects", icon="idea", href=dash.page_registry['pages.projects']['path']),
+        icon_and_text(id="side_increase", text="Benefit", icon="increase", href=dash.page_registry['pages.projects']['path']),
     ],
     className="sidebar"
 )
