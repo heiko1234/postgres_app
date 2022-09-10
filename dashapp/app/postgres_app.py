@@ -4,9 +4,6 @@ from dash import Dash, html, dcc
 from app.utilities.sidebar_utils import (
     icon_and_text
 )
-# from dashapp.app.utilities.sidebar_utils import (
-#     icon_and_text
-# )
 
 
 # session store
@@ -30,12 +27,6 @@ sidebar = html.Div(
         html.Div(
             dcc.Markdown("\n---\n")
         ),
-        # html.Div(
-        #     dcc.Link('1st', href=dash.page_registry['pages.home']['path'])
-        #     ),
-        # html.Div(
-        #     dcc.Link('2nd', href=dash.page_registry['pages.secondpage']['path'])
-        #     ),
         icon_and_text(id="side_user", text="Team", icon="user", href=dash.page_registry['pages.team']['path']),
         icon_and_text(id="side_project", text="Projects", icon="idea", href=dash.page_registry['pages.projects']['path']),
         icon_and_text(id="side_increase", text="Benefit", icon="increase", href=dash.page_registry['pages.projects']['path']),
@@ -58,6 +49,3 @@ app.layout = html.Div(
 
 
 
-
-# if __name__ == "__main__":
-#     app.run_server(port=8050, debug=True)
