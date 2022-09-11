@@ -29,7 +29,12 @@ poetry install
 ## Icons
 https://www.flaticon.com/
 
-Icons have been used from flaticon, from icon provider *Freepik*. Thank you for this nice little art work.
+Icons have been used from flaticon, from icon provider *Freepik* *bearicons*, . Thank you for this nice little art work.
+
+
+## Box Shadows
+getcsscan.com/css-box-shadow-examples
+
 
 
 ## Gradient CSS
