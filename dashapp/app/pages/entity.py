@@ -1,4 +1,5 @@
 import dash
+import pandas as pd
 from dash import html, dcc
 from dash.dependencies import Input, Output, State
 from app.utilities.cards import (
@@ -11,7 +12,8 @@ from app.utilities.cards import (
     content_card_size
 )
 from app.utilities.app_utilities import (
-    get_option_list
+    get_option_list,
+    execute_sql
 )
 
 dash.register_page(__name__,)
@@ -99,7 +101,8 @@ layout = html.Div(
 
 
 @dash.callback(
-    Output("a_session_store", "data"),
+    Output("add_entity_button", "style"),
+    # Output("a_session_store", "data"),
     [
         Input("add_entity_button_button", "n_clicks"),
         State("add_entity", "value"),
@@ -107,7 +110,31 @@ layout = html.Div(
 )
 def new_entity(n_clicks, new_entity):
 
-    return new_entity
+    color = {"background-color": "white"}
+
+    result = None
+
+    if new_entity != None:
+
+        sql = f"""
+            INSERT INTO entity(entity_name) VALUES('{new_entity}')
+        """
+
+        try: 
+            result = execute_sql(sql)
+        except BaseException:
+            result = None
+
+        if result == "Done":
+            color = {"background-color": "green"}
+
+        else:
+            color = {"background-color": "red"}
+    
+    else:
+        color = {"background-color": "white"}
+
+    return color
 
 
 @dash.callback(
@@ -116,14 +143,25 @@ def new_entity(n_clicks, new_entity):
         Output("dd_entity", "value")
     ],
     [
-        Input("a_session_store", "data"),
+        Input("update_entity_button", "n_clicks"),
     ]
 )
-def new_entity(data):
+def new_entity(n_clicks):
 
-    dict_list = get_option_list(data)
+    sql = """
+        SELECT entity_name FROM entity
+    """
+    data = execute_sql(sql)
+    data
 
-    first_choise = data[0]
+    data=pd.DataFrame(data, columns=["OD"])
+    list_data=list(data["OD"])
+    list_data.sort()
+    # list_data
+
+    dict_list = get_option_list(list_data)
+
+    first_choise = list_data[0]
 
     return dict_list, first_choise
 

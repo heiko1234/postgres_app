@@ -140,6 +140,7 @@ def small_icon_card(
         className="small_icon_card",
         children=[
             html.Div(
+                id=id+str("_color"),
                 className="icon_card_img",
                 children=[
                     html.Img(id=id+str("_button"), src='data:image/png;base64,{}'.format(encoded_img.decode()),

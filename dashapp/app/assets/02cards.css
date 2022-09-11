@@ -76,9 +76,16 @@
     margin-right: 1rem;
     padding-right: 0rem;
 }
+
 .icon_card_img{
     box-shadow: rgba(0, 0, 0, 0.853) 0px 0px 0px 3px;
 }
+
+/* .icon_card_img_active{
+    box-shadow: rgba(8, 215, 35, 0.853) 0px 0px 0px 3px;
+} */
+
+
 .icon_card_text{
     height: 90px;
     width: 240px;
