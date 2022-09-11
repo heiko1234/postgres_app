@@ -42,6 +42,8 @@ https://cssgradient.io/
 
 
 
+# POSTGRES
+https://dba.stackexchange.com/questions/46410/how-do-i-insert-a-row-which-contains-a-foreign-key
 
 
 
