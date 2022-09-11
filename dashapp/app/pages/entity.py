@@ -1,8 +1,9 @@
 import dash
-import dash_table
+
 import pandas as pd
 from time import sleep
 from dash import html, dcc
+from dash import dash_table
 from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 from app.utilities.cards import (
