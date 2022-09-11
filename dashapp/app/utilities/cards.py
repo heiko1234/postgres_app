@@ -26,6 +26,32 @@ def content_card(
     return card
 
 
+def content_card_size(
+    id,
+    title,
+    content,
+    size="200px",
+    height="300px"
+
+):
+    header = html.Div(
+        className="content_header",
+        children=[
+            html.Div(
+                title,
+            )
+        ],
+        style={"display": "flex"}
+    )
+    card = html.Div(
+        id=id,
+        className="content_card_size",
+        children=[header, html.H3(""), *content],
+        style={"width": size, "height": height}
+    )
+
+    return card
+
 
 def mini_card(text, a_function):
     output = html.Div(
@@ -116,7 +142,7 @@ def small_icon_card(
             html.Div(
                 className="icon_card_img",
                 children=[
-                    html.Img(src='data:image/png;base64,{}'.format(encoded_img.decode()),
+                    html.Img(id=id+str("_button"), src='data:image/png;base64,{}'.format(encoded_img.decode()),
                     style={
                         "height": "70px", 
                         "width": "70px", 

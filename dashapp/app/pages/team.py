@@ -31,7 +31,7 @@ team_card = content_card(
                 mini_card("Name", a_function=dcc.Input(id="i_name", type="text", placeholder="", style={"width": "130px"})),
                 mini_card("Surname", a_function=dcc.Input(id="i_surname", type="text", placeholder="", style={"width": "130px"})),
                 mini_card("Full Name", a_function=dcc.Loading(id="o_fullname", style={"width": "130px"})),
-                mini_card("BASF UserID", a_function=dcc.Input(id="i_basfid", type="text", placeholder="", style={"width": "130px"})),
+                mini_card("UserID", a_function=dcc.Input(id="i_id", type="text", placeholder="", style={"width": "130px"})),
                 mini_card("Email", a_function=dcc.Input(id="i_mail", type="email", placeholder="", style={"width": "130px"})),
                 mini_card("Legal Entity", a_function=dcc.Dropdown(id="i_entity", placeholder="", style={"width": "130px"})),
                 small_icon_card(id="save_new", icon="add-user", color="white")
@@ -52,7 +52,7 @@ update_team_card = content_card(
                 mini_card("Name", a_function=dcc.Input(id="u_name", type="text", placeholder="", style={"width": "130px"})),
                 mini_card("Surname", a_function=dcc.Input(id="u_surname", type="text", placeholder="", style={"width": "130px"})),
                 mini_card("Full Name", a_function=dcc.Loading(id="u_fullname", style={"width": "130px"})),
-                mini_card("BASF UserID", a_function=dcc.Dropdown(id="dd_basfid", placeholder="", style={"width": "130px"})),
+                mini_card("UserID", a_function=dcc.Dropdown(id="dd_id", placeholder="", style={"width": "130px"})),
                 mini_card("Email", a_function=dcc.Input(id="u_mail", type="email", placeholder="", style={"width": "130px"})),
                 mini_card("Legal Entity", a_function=dcc.Dropdown(id="u_entity", placeholder="", style={"width": "130px"})),
                 small_icon_card(id="update_new", icon="update", color="white"),
@@ -73,7 +73,7 @@ manage_team_card = content_card(
             children=[
                 mini_card("ID", a_function=dcc.Dropdown(id="dd_m_userid", placeholder="", style={"width": "130px"})),
                 mini_card("Full Name", a_function=dcc.Dropdown(id="m_fullname", style={"width": "130px"})),
-                mini_card("BASF UserID", a_function=dcc.Dropdown(id="m_basfid", placeholder="", style={"width": "130px"})),
+                mini_card("UserID", a_function=dcc.Dropdown(id="m_id", placeholder="", style={"width": "130px"})),
                 mini_card("Contract Year", a_function=dcc.Dropdown(id="m_contract_year", placeholder="", style={"width": "130px"})),
                 mini_card("Contract", a_function=dcc.Input(id="m_contract", type="number", min=0, max=100, placeholder="", style={"width": "130px"})),
                 mini_card("Budget", a_function=dcc.Loading(id="m_budget", style={"width": "130px"})),

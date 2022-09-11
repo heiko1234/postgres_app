@@ -28,7 +28,7 @@ sidebar = html.Div(
             dcc.Markdown("\n---\n")
         ),
         icon_and_text(id="side_user", text="Team", icon="user", href=dash.page_registry['pages.team']['path']),
-        icon_and_text(id="side_entity", text="Entity", icon="entity", href=dash.page_registry['pages.projects']['path']),
+        icon_and_text(id="side_entity", text="Entity", icon="entity", href=dash.page_registry['pages.entity']['path']),
         icon_and_text(id="side_project", text="Projects", icon="idea", href=dash.page_registry['pages.projects']['path']),
         icon_and_text(id="side_increase", text="Benefit", icon="increase", href=dash.page_registry['pages.projects']['path']),
     ],
@@ -39,6 +39,7 @@ sidebar = html.Div(
 app.layout = html.Div(
     [
         sidebar,
+        a_session_store,
         html.Div(
             [
                 dash.page_container
