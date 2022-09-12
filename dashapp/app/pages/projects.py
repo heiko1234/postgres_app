@@ -150,7 +150,7 @@ asign_project = content_card_size(
     content=[
         html.Div(
             children=[
-                mini_card("asign_Project_ID", a_function=dcc.Input(id="new_projectid", type="text", placeholder="", style={"width": "130px"})),
+                mini_card("Project_ID", a_function=dcc.Input(id="new_projectid", type="text", placeholder="", style={"width": "130px"})),
                 mini_card("Team_Memeber", a_function=dcc.Input(id="new_projectid", type="text", placeholder="", style={"width": "130px"})),
                 small_icon_card(id="add_button", icon="add", color="white"),
                 small_icon_card(id="delete_button", icon="delete", color="white"),
