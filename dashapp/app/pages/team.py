@@ -37,8 +37,8 @@ sql = """
     SELECT entity_name FROM entity
 """
 data = execute_sql(sql)
-data=pd.DataFrame(data, columns=["OD"])
-list_data=list(data["OD"])
+data=pd.DataFrame(data, columns=["Entity"])
+list_data=list(data["Entity"])
 list_data.sort()
 entity_options = get_option_list(list_data)
 
@@ -70,7 +70,7 @@ team_card = content_card(
 
 update_team_card = content_card(
     id="team_update_content",
-    title="Update Team Member",
+    title="Update or Delete a Team Member",
     content=[
         html.Div(
             children=[
@@ -122,7 +122,6 @@ table_card = content_card_size(
                 mini_card("Select", 
                     a_function=dcc.Dropdown(
                         id="team_table_dd", 
-                        #     df["eff. Coverage"] = round(df["Contract"] * df["Working Month"] * df["Coverage"] * 1/100 * 1/12,1)
                         options=[
                             {"label": "eff. Coverage", "value": "eff. Coverage"},
                             {"label": "Coverage", "value": "Coverage"}, 
@@ -254,17 +253,6 @@ def delete_person(n_clicks, u_fullname):
 
 
 # update a person
-
-# mini_card("Full Name", a_function=dcc.Dropdown(id="u_fullname", style={"width": "130px"})),
-# mini_card("Name", a_function=dcc.Input(id="u_name", type="text", style={"width": "130px"})),
-# mini_card("Surname", a_function=dcc.Input(id="u_surname", type="text", style={"width": "130px"})),
-# mini_card("UserID", a_function=dcc.Input(id="u_id", type="text", style={"width": "130px"})),
-# mini_card("Email", a_function=dcc.Input(id="u_mail", type="email", style={"width": "130px"})),
-# mini_card("Legal Entity", a_function=dcc.Dropdown(id="u_entity", options=entity_options, style={"width": "130px"})),
-# mini_card("Start Date", a_function=dcc.DatePickerSingle(id="u_contract_year", style={"width": "130px"})),
-# small_icon_card(id="update_new", icon="update", color="white"),
-# small_icon_card(id="delete", icon="delete_user", color="white")
-
 
 @dash.callback(
 
