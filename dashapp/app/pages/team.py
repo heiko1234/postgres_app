@@ -253,6 +253,61 @@ def delete_person(n_clicks, u_fullname):
     return color
 
 
+# update a person
+
+# mini_card("Full Name", a_function=dcc.Dropdown(id="u_fullname", style={"width": "130px"})),
+# mini_card("Name", a_function=dcc.Input(id="u_name", type="text", style={"width": "130px"})),
+# mini_card("Surname", a_function=dcc.Input(id="u_surname", type="text", style={"width": "130px"})),
+# mini_card("UserID", a_function=dcc.Input(id="u_id", type="text", style={"width": "130px"})),
+# mini_card("Email", a_function=dcc.Input(id="u_mail", type="email", style={"width": "130px"})),
+# mini_card("Legal Entity", a_function=dcc.Dropdown(id="u_entity", options=entity_options, style={"width": "130px"})),
+# mini_card("Start Date", a_function=dcc.DatePickerSingle(id="u_contract_year", style={"width": "130px"})),
+# small_icon_card(id="update_new", icon="update", color="white"),
+# small_icon_card(id="delete", icon="delete_user", color="white")
+
+
+@dash.callback(
+
+    Output("update_new", "style"),
+    [
+        Input("update_new_button", "n_clicks"),
+        State("u_fullname", "value"),
+        State("u_name", "value"),
+        State("u_surname", "value"),
+        State("u_id", "value"),
+        State("u_mail", "value"),
+        State("u_entity", "value"),
+        State("u_contract_year", "date"),
+    ]
+    ,prevent_initial_call=True
+)
+def update_person(n_clicks, old_fullname, new_name, new_surname, new_user_id, new_email, new_legal_entity, new_entry_date):
+
+    color = {"background-color": "white"}
+
+    new_fullname = new_name+" "+new_surname
+
+    sql=f"""
+            UPDATE team_members
+            SET 
+            pre_name = '{new_name}',
+            sur_name = '{new_surname}',
+            full_name = '{new_fullname}',
+            email = '{new_email}',
+            user_id = '{new_user_id}',
+            legal_entity_id = (SELECT entity_id FROM entity WHERE entity_name = '{new_legal_entity}'),
+            department_entry_date = '{new_entry_date}'
+            WHERE team_id in (SELECT team_id FROM team_members WHERE full_name = '{old_fullname}');
+    """
+
+
+    data = execute_sql(sql)
+    data
+
+    return color
+
+
+
 
 @dash.callback(
     [
@@ -261,6 +316,7 @@ def delete_person(n_clicks, u_fullname):
         Output("u_id", "value"),
         Output("u_mail", "value"),
         Output("u_entity", "value"),
+        Output("u_contract_year", "date"),
     ],
     [
         Input("u_fullname", "value"),
@@ -268,16 +324,6 @@ def delete_person(n_clicks, u_fullname):
     ,prevent_initial_call=True
 )
 def update_dropdown(fullname):
-
-
-    # SELECT et.year, e.entity_name, et.coverage
-    # FROM entity_time et
-    # INNER JOIN entity e
-    # ON e.entity_id = et.entity_id;
-
-
-    # sql = f"""SELECT * FROM team_members WHERE full_name = '{fullname}';
-    # """
 
     if fullname != None:
 
@@ -299,11 +345,16 @@ def update_dropdown(fullname):
         u_id = data.loc[0, "user_id"]
         u_mail = data.loc[0, "email"]
         u_entity = data.loc[0, "leagal_entity"]
+        
+        u_entry_year = data.loc[0, "entry_date"]
+
+
 
     else:
-        u_name = u_surname = u_id = u_mail = u_entity = None
+        u_name = u_surname = u_id = u_mail = u_entity = None 
+        u_entry_year = None
 
-    return u_name, u_surname, u_id, u_mail, u_entity
+    return u_name, u_surname, u_id, u_mail, u_entity, u_entry_year
 
 
 
@@ -319,7 +370,7 @@ def update_dropdown(fullname):
     ]
     ,prevent_initial_call=True
 )
-def update_dropdown(fullname, year, contract, month):
+def update_calculation_budget(fullname, year, contract, month):
 
     sleep(0.5)
 
@@ -350,7 +401,7 @@ def update_dropdown(fullname, year, contract, month):
         return html.H3(budget)
 
     else: 
-        return html.H3("A Problem")
+        return html.H3("No Data")
 
 
 
@@ -362,7 +413,7 @@ def update_dropdown(fullname, year, contract, month):
     ]
     # ,prevent_initial_call=True
 )
-def call_data(n_clicks, dd_team):
+def call_datatable(n_clicks, dd_team):
 
     sleep(0.5)
 
@@ -414,15 +465,6 @@ def call_data(n_clicks, dd_team):
 
 
 
-
-
-# mini_card("Full Name", a_function=dcc.Dropdown(id="m_fullname", style={"width": "130px"})),
-# mini_card("Year", a_function=dcc.Input(id="m_year", type="number", min=2000, max=2100, step=1, value=this_year, style={"width": "130px"})),
-# mini_card("Contract", a_function=dcc.Input(id="m_contract", type="number", value=100, min=0, max=100, style={"width": "130px"})),
-# mini_card("Working Month", a_function=dcc.Input(id="m_month", type="number", value=12, min=0, max=12, style={"width": "130px"})),
-# mini_card("Activty", a_function=dcc.Dropdown(id="m_activity", options=[{"label": "Project", "value": "Project"}, {"label": "Verbund", "value": "Verbund"}], style={"width": "130px"})),
-# mini_card("Calculate Budget", a_function=dcc.Loading(id="m_budget", style={"width": "130px"})),
-# small_icon_card(id="update_m", icon="update", color="white"),
 
 
 @dash.callback(

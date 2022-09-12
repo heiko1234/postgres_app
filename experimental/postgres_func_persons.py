@@ -294,11 +294,55 @@ data
 
 
 
+#####
+# UPDATE courses
+# SET published_date = '2020-08-01' 
+# WHERE course_id = 3;
+
+# CREATE TABLE team_members (
+#         team_id SERIAL PRIMARY KEY,
+#         pre_name VARCHAR(100) NOT NULL,
+#         sur_name VARCHAR(150) NOT NULL,
+#         full_name VARCHAR(255) NOT NULL,
+#         email text,
+#         user_id text NOT NULL,
+#         legal_entity_id BIGINT,
+#         department_entry_date DATE,
+#         status VARCHAR(20)
 
 
+new_name = "HEiko"
+new_surname = "Kulina"
+new_fullname = new_name+" "+new_surname
+new_email = "HikoKulinna@gmx.de"
+new_user_id = "KulinnH"
+# new_leagal_entity_id = 1
+new_leagal_entity = "BASF SE"
+new_entry_date = "2022-01-15"
+dd_fullname = "Heiko Kulinna"
+
+sql=f"""
+        UPDATE team_members
+        SET 
+        pre_name = '{new_name}',
+        sur_name = '{new_surname}',
+        full_name = '{new_fullname}',
+        email = '{new_email}',
+        user_id = '{new_user_id}',
+        legal_entity_id = (SELECT entity_id FROM entity WHERE entity_name = '{new_leagal_entity}'),
+        department_entry_date = '{new_entry_date}'
+        WHERE team_id in (SELECT team_id FROM team_members WHERE full_name = '{dd_fullname}');
+"""
+
+data = execute_sql(sql)
+data
 
 
+sql = """
+    SELECT * FROM team_members
+    """
 
-
+data = execute_sql(sql)
+data
 
 

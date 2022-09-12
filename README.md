@@ -3,9 +3,9 @@
 
 I like to build up a dash app dockered to add and query a postgres database for project management
 
-![pic1](./assets/screenshoot1.png)
+![pic1](./assets/screenshoot3.png)
 
-![pic2](./assets/screenshoot2.png)
+![pic2](./assets/screenshoot4.png)
 
 
 
