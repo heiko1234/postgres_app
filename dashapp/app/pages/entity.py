@@ -2,6 +2,7 @@ import dash
 
 import pandas as pd
 from time import sleep
+import datetime
 from dash import html, dcc
 from dash import dash_table
 from dash.dependencies import Input, Output, State
@@ -30,6 +31,10 @@ dash.register_page(__name__,)
 # )
 
 
+# what is this year when loading
+this_year=datetime.datetime.today().year
+
+
 add_entity_card = content_card_size(
     id="add_entity_content",
     title="Add an Entity",
@@ -56,7 +61,7 @@ update_coverage_entity = content_card_size(
         html.Div(
             children=[
                 mini_card("Legal Entity", a_function=dcc.Dropdown(id="dd_entity", style={"width": "130px"})),
-                mini_card("Year", a_function=dcc.Input(id="dd_year", type="number", min=2000, max=2100, step=1, value=2024, style={"width": "130px"})),
+                mini_card("Year", a_function=dcc.Input(id="dd_year", type="number", min=2000, max=2100, step=1, value=this_year, style={"width": "130px"})),
                 mini_card("Coverage", a_function=dcc.Input(id="coverage_entity", type="number", min=0, max=1000, value=200, style={"width": "130px"})),
                 small_icon_card(id="update_entity", icon="update", color="white"),
             ],

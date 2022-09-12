@@ -83,10 +83,14 @@ sql = """
 
 # year integer
 
+dd_year = 2022
+dd_entrity = "BDS"
+coverage_entity = 250
+
 
 sql = f"""
     INSERT INTO entity_time (year, entity_id, coverage) VALUES 
-    ('{dd_year}', (SELECT entity_id FROM entity WHERE entity_name = '{dd_entity}'),('{coverage_entity}'));
+    ('{dd_year}', (SELECT entity_id FROM entity WHERE entity_name = '{dd_entrity}'),('{coverage_entity}'));
 """
 
 
@@ -165,6 +169,133 @@ sql = f"""
 
 data = execute_sql(sql)
 data
+
+
+# full table für alle leute, tabelle
+sql = f"""
+    SELECT tm.full_name, e.entity_name, et.year, et.coverage
+    FROM team_members tm
+    INNER JOIN entity e
+    ON tm.legal_entity_id = e.entity_id
+    INNER JOIN entity_time et
+    ON e.entity_id = et.entity_id
+    """
+
+data = execute_sql(sql)
+data
+
+df = pd.DataFrame(data, columns=["Fullname", "Entity", "Year", "Coverage"])
+
+pdf = df.pivot(index="Fullname", columns="Year", values="Coverage")
+pdf
+
+
+
+
+
+
+#####
+
+# How to insert in team_info
+
+dd_year = 2022
+dd_entrity = "BDS"
+coverage_entity = 250
+
+
+sql = f"""
+    INSERT INTO entity_time (year, entity_id, coverage) VALUES 
+    ('{dd_year}', (SELECT entity_id FROM entity WHERE entity_name = '{dd_entrity}'),('{coverage_entity}'));
+"""
+
+# CREATE TABLE team_info (
+#     team_info_id SERIAL PRIMARY KEY,
+#     team_id INTEGER NOT NULL,
+#     FOREIGN KEY (team_id)
+#         REFERENCES team_members (team_id)
+#         ON UPDATE CASCADE ON DELETE CASCADE,
+#     year INTEGER NOT NULL,
+#     contract INTEGER NOT NULL,
+#     working_month INTEGER NOT NULL,
+#     entity_id BIGINT NOT NULL, 
+#     FOREIGN KEY (entity_id)
+#         REFERENCES entity (entity_id)
+#         ON UPDATE CASCADE ON DELETE CASCADE
+
+dd_year = 2025
+dd_entrity = "BDS"
+# coverage_entity = 230
+fullname = "Heiko Kulinna"
+contract = 80
+working_month = 8
+
+
+sql = f"""
+    INSERT INTO team_info (team_id, year, contract, working_month, entity_id) VALUES 
+    (
+        (SELECT team_id FROM team_members WHERE full_name = '{fullname}'),
+        '{dd_year}',
+        '{contract}',
+        '{working_month}',
+        (SELECT entity_id FROM entity WHERE entity_name = '{dd_entrity}')
+    );
+"""
+
+data = execute_sql(sql)
+data
+
+
+
+# full table für alle leute, tabelle
+sql = f"""
+    SELECT tm.full_name, ti.year, ti.contract, ti.working_month, et.coverage
+    FROM team_members tm
+    INNER JOIN team_info ti
+    ON tm.team_id = ti.team_id
+    INNER JOIN entity e
+    ON tm.legal_entity_id = e.entity_id
+    INNER JOIN entity_time et
+    ON e.entity_id = et.entity_id
+    """
+
+
+
+data = execute_sql(sql)
+data
+
+df = pd.DataFrame(data, columns=["Fullname", "Year", "Contract", "Working Month", "Coverage"])
+df
+
+df["eff. Coverage"] = round(df["Contract"] * df["Working Month"] * df["Coverage"] * 1/100 * 1/12,1)
+
+df
+
+df.pivot(index = "Fullname", columns="Year", values="eff. Coverage").reset_index(drop=False)
+
+
+
+fullname = "Heiko Kulinna"
+dd_year = 202
+
+
+# delete combined
+sql = f"""
+        DELETE from team_info 
+        WHERE
+        team_id in (SELECT team_id FROM team_members WHERE full_name = '{fullname}')
+        AND
+        team_info.year = '{dd_year}';
+"""
+
+
+data = execute_sql(sql)
+data
+
+
+
+
+
+
 
 
 
