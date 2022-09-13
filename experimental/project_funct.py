@@ -35,6 +35,44 @@ def execute_sql(sql):
 
 
 
+funding="KDC"
+topic="Irgentwas"
+topic_class="Softsensor"
+argus="Yes"
+charging="Manuall"
+rec_account="eine Kostenstelle"
+account_resp="ein Name"
+start="2022-02-15"
+end="2022-05-18"
+difficulty="8"
+status="pending"
+description="ein langer Text"
+target= "auch ein langer Text"
+
+
+
+sql = f"""
+    INSERT INTO project (funding_id, topic, topic_class_id, argus_enabled, way_charging, recieving_account, cost_center_respon, start_date, end_date, difficulty, project_status, project_description, project_goals) VALUES 
+    (
+        (SELECT founding_source_id FROM founding_sources WHERE founding_source = '{funding}'),
+        '{topic}',
+        (SELECT topic_class_id FROM topic_class WHERE topic_class = '{topic_class}'),
+        '{argus}',
+        '{charging}',
+        '{rec_account}',
+        '{account_resp}',
+        '{start}',
+        '{end}',
+        '{difficulty}',
+        '{status}',
+        '{description}',
+        '{target}'
+    );
+"""
+
+data = execute_sql(sql)
+
+
 
 
 sql= "SELECT project_id FROM project"
@@ -87,5 +125,71 @@ data
 
 data = pd.DataFrame(data, columns=["funding", "topic", "topic_class", "argus", "charging", "rec_account", "account_resp", "start", "end", "difficulty", "status", "description", "target"])
 data
+
+
+
+
+# 
+# sql=f"""
+#     UPDATE team_members
+#     SET 
+#     pre_name = '{new_name}',
+#     sur_name = '{new_surname}',
+#     full_name = '{new_fullname}',
+#     email = '{new_email}',
+#     user_id = '{new_user_id}',
+#     legal_entity_id = (SELECT entity_id FROM entity WHERE entity_name = '{new_legal_entity}'),
+#     department_entry_date = '{new_entry_date}'
+#     WHERE team_id in (SELECT team_id FROM team_members WHERE full_name = '{old_fullname}');
+# """
+
+
+
+# fs.founding_source, p.topic, tc.topic_class, p.argus_enabled, p.way_charging, p.recieving_account, 
+# p.cost_center_respon, p.start_date, p.end_date, p.difficulty, p.project_status, p.project_description, 
+# p.project_goals
+
+funding="KDC"
+topic="Irgentwas"
+topic_class="Softsensor"
+argus="Yes"
+charging="Manuall"
+rec_account="eine Kostenstelle"
+account_resp="ein Name"
+start="2022-02-15"
+end="2022-05-18"
+difficulty="8"
+status="pending"
+description="ein langer Text"
+target= "auch ein langer Text"
+project_id = 1
+
+
+sql = f"""
+    UPDATE project
+    SET
+    funding_id = (SELECT founding_source_id FROM founding_sources WHERE founding_source = '{funding}'),
+    topic = '{topic}',
+    topic_class_id = (SELECT topic_class_id FROM topic_class WHERE topic_class = '{topic_class}'),
+    argus_enabled = '{argus}',
+    way_charging = '{charging}',
+    recieving_account = '{rec_account}',
+    cost_center_respon = '{account_resp}',
+    start_date = '{start}',
+    end_date = '{end}',
+    difficulty = '{difficulty}',
+    project_status = '{status}',
+    project_description = '{description}',
+    project_goals = '{target}'
+    WHERE project_id = '{project_id}';
+"""
+
+data = execute_sql(sql)
+data
+
+
+
+
+
 
 

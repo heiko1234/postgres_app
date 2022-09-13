@@ -39,6 +39,7 @@ data=execute_sql(sql)
 
 data=pd.DataFrame(data, columns=["project_id"])
 list_data=list(data["project_id"])
+list_data.sort()
 project_options = get_option_list(list_data)
 
 
@@ -260,44 +261,18 @@ def new_project(n_clicks, funding, topic, topic_class, argus, charging, rec_acco
 
         data = execute_sql(sql)
 
-
     sql= "SELECT project_id FROM project"
     data=execute_sql(sql)
 
     data=pd.DataFrame(data, columns=["project_id"])
     list_data=list(data["project_id"])
+    list_data.sort()
     project_options = get_option_list(list_data)
 
     sql = f"SELECT project_id FROM project WHERE topic = '{topic}';"
     new_index = execute_sql(sql)[0][0]
 
-    # new_index = None
-
     return project_options, new_index
-
-
-
-# children=[
-#     mini_card("Project_ID", a_function=dcc.Dropdown(id="new_projectid", options=project_options, style={"width": "130px"})),
-#     mini_card("Funding", a_function=dcc.Dropdown(id="new_funding", options=founding_sources_options, style={"width": "130px"})),
-#     mini_card("Topic", a_function=dcc.Input(id="new_topic", type="text", placeholder="", style={"width": "130px"})),
-#     mini_card("Topic Class", a_function=dcc.Dropdown(id="new_topic_class", options=topic_class_options, style={"width": "130px"})),
-#     mini_card("Argus enabled", a_function=dcc.Dropdown(id="new_argus", value="Yes", options=[{"label": "Yes", "value": "Yes"}, {"label": "No", "value": "No"}], style={"width": "130px"})),
-#     mini_card("Way of charging", a_function=dcc.Dropdown(id="new_charging", value="Manual", options=[{"label": "Manual", "value": "Manual"}, {"label": "LRM", "value": "LRM"}], style={"width": "130px"})),
-#     small_icon_card(id="add_project", icon="add", color="white"),
-#     small_icon_card(id="update_project", icon="update", color="white"),
-# ],
-# style={"display": "flex"}
-# ),
-# html.Div(
-# children=[
-#     mini_card("Rec. Account", a_function=dcc.Input(id="rec_account", type="text", placeholder="", style={"width": "130px"})),
-#     mini_card("Cost Center Resp.", a_function=dcc.Input(id="new_account_responsible", type="text", placeholder="", style={"width": "130px"})),
-#     mini_card("Start Date", a_function=dcc.DatePickerSingle(id="new_start", style={"width": "130px"})),
-#     mini_card("End Date", a_function=dcc.DatePickerSingle(id="new_end", style={"width": "130px"})),
-#     mini_card("Difficulty", a_function=dcc.Dropdown(id="new_project_diff", options=option_difficultiy, value="5", style={"width": "130px"})),
-#     mini_card("Project Status", a_function=dcc.Dropdown(id="new_project_status", options = project_status, value= "Planned", style={"width": "130px"})),
-# ],
 
 
 
@@ -322,7 +297,7 @@ def new_project(n_clicks, funding, topic, topic_class, argus, charging, rec_acco
     ]
     ,prevent_initial_call=True
 )
-def new_project(project_id):
+def load_project(project_id):
 
     if project_id != None:
 
@@ -362,6 +337,51 @@ def new_project(project_id):
 
 
 
+@dash.callback(
+    Output("update_project", "style"),
+    [
+        Input("update_project_button", "n_clicks"),
+        State("new_projectid", "value"),
+        State("new_funding", "value"),
+        State("new_topic", "value"),
+        State("new_topic_class", "value"),
+        State("new_argus", "value"),
+        State("new_charging", "value"),
+        State("rec_account", "value"),
+        State("new_account_responsible", "value"),
+        State("new_start", "date"),
+        State("new_end", "date"),
+        State("new_project_diff", "value"),
+        State("new_project_status", "value"),
+        State("new_text", "value"),
+        State("new_target", "value")
+    ]
+    ,prevent_initial_call=True
+)
+def update_project(n_clicks, project_id, funding, topic, topic_class, argus, charging, rec_account, account_resp, start, end, difficulty, status, description, target):
 
+    sql = f"""
+        UPDATE project
+        SET
+        funding_id = (SELECT founding_source_id FROM founding_sources WHERE founding_source = '{funding}'),
+        topic = '{topic}',
+        topic_class_id = (SELECT topic_class_id FROM topic_class WHERE topic_class = '{topic_class}'),
+        argus_enabled = '{argus}',
+        way_charging = '{charging}',
+        recieving_account = '{rec_account}',
+        cost_center_respon = '{account_resp}',
+        start_date = '{start}',
+        end_date = '{end}',
+        difficulty = '{difficulty}',
+        project_status = '{status}',
+        project_description = '{description}',
+        project_goals = '{target}'
+        WHERE project_id = '{project_id}';
+    """
+    data = execute_sql(sql)
+    data
 
+    color = {"background-color": "white"}
+
+    return color
 
