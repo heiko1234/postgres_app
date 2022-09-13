@@ -310,4 +310,76 @@ def call_data(n_clicks):
 
 
 
+@dash.callback(
+    Output("add_source_button", "style"),
+    [
+        Input("add_source_button_button", "n_clicks"),
+        State("add_founding_source", "value"),
+    ]
+    ,prevent_initial_call=True
+)
+def new_founding(n_clicks, new_source):
+
+    color = {"background-color": "white"}
+
+    result = None
+
+    if new_source != None:
+
+        sql = f"""
+            INSERT INTO founding_sources(founding_source) VALUES('{new_source}')
+        """
+
+        result = execute_sql(sql)
+
+        if result == "Done":
+            color = {"background-color": "green"}
+
+        else:
+            color = {"background-color": "red"}
+    
+    else:
+        color = {"background-color": "white"}
+
+    return color
+
+
+# mini_card("Topic Class", a_function=dcc.Input(id="add_topic_class", type="text", placeholder="", style={"width": "130px"})),
+# small_icon_card(id="add_topic_button", icon="add", color="white"),
+
+@dash.callback(
+    Output("add_topic_button", "style"),
+    [
+        Input("add_topic_button_button", "n_clicks"),
+        State("add_topic_class", "value"),
+    ]
+    ,prevent_initial_call=True
+)
+def new_topic(n_clicks, new_topic):
+
+    color = {"background-color": "white"}
+
+    result = None
+
+    if new_topic != None:
+
+        sql = f"""
+            INSERT INTO topic_class(topic_class) VALUES('{new_topic}')
+        """
+
+        result = execute_sql(sql)
+
+        if result == "Done":
+            color = {"background-color": "green"}
+
+        else:
+            color = {"background-color": "red"}
+    
+    else:
+        color = {"background-color": "white"}
+
+    return color
+
+
+
 
