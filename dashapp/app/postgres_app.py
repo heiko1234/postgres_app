@@ -28,11 +28,13 @@ sidebar = html.Div(
             dcc.Markdown("\n---\n")
         ),
         icon_and_text(id="side_user", text="Team", icon="user", href=dash.page_registry['pages.team']['path']),
-        icon_and_text(id="side_entity", text="Entity", icon="entity", href=dash.page_registry['pages.entity']['path']),
         icon_and_text(id="side_project", text="Projects", icon="idea", href=dash.page_registry['pages.projects']['path']),
-        icon_and_text(id="side_money", text="Money", icon="money1", href=dash.page_registry['pages.money']['path']),
+        icon_and_text(id="side_money", text="Costs", icon="money1", href=dash.page_registry['pages.costs']['path']),
         icon_and_text(id="side_analysis", text="Analysis", icon="analysis3", href=dash.page_registry['pages.analysis']['path']),
         icon_and_text(id="side_increase", text="Benefit", icon="increase", href=dash.page_registry['pages.increase']['path']),
+        html.H3(""),
+        html.H3(""),
+        icon_and_text(id="side_construct", text="Construct", icon="construct3", href=dash.page_registry['pages.construct']['path']),
     ],
     className="sidebar"
 )

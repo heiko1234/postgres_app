@@ -39,48 +39,16 @@ dash.register_page(__name__,)
 this_year=datetime.datetime.today().year
 
 
-add_founding_card = content_card_size(
-    id="add_founding_content",
-    title="Add an Founding Source",
-    size="400px", 
-    height="200px",
-    content=[
-        html.Div(
-            children=[
-                mini_card("Founding Source", a_function=dcc.Input(id="add_founding_source", type="text", placeholder="", style={"width": "130px"})),
-                small_icon_card(id="add_source_button", icon="add", color="white"),
-            ],
-            style={"display": "flex"}
-        ),
-    ]
-)
-
-add_topic_class_card = content_card_size(
-    id="add_topic_class_content",
-    title="Add an Topic Class",
-    size="400px", 
-    height="200px",
-    content=[
-        html.Div(
-            children=[
-                mini_card("Topic Class", a_function=dcc.Input(id="add_topic_class", type="text", placeholder="", style={"width": "130px"})),
-                small_icon_card(id="add_topic_button", icon="add", color="white"),
-            ],
-            style={"display": "flex"}
-        ),
-    ]
-)
-
-
 
 aproject_card = content_card_size(
     id="project_content",
     title="Project",
-    size="1200px", 
-    height="700px",
+    size="1420px", 
+    height="900px",
     content=[
         html.Div(
             children=[
+                mini_card("Project_ID", a_function=dcc.Input(id="new_projectid", type="text", placeholder="", style={"width": "130px"})),
                 mini_card("Funding", a_function=dcc.Input(id="new_funding", type="text", placeholder="", style={"width": "130px"})),
                 mini_card("Topic", a_function=dcc.Input(id="new_topic", type="text", placeholder="", style={"width": "130px"})),
                 mini_card("Topic Class", a_function=dcc.Input(id="new_topic_class", type="text", placeholder="", style={"width": "130px"})),
@@ -93,51 +61,61 @@ aproject_card = content_card_size(
         ),
         html.Div(
             children=[
+                mini_card("Rec. Account", a_function=dcc.Input(id="new_account", type="text", placeholder="", style={"width": "130px"})),
+                mini_card("Cost Center Resp.", a_function=dcc.Input(id="new_account_responsible", type="text", placeholder="", style={"width": "130px"})),
+                mini_card("Start Date", a_function=dcc.Input(id="new_start", type="text", placeholder="", style={"width": "130px"})),
+                mini_card("End Date", a_function=dcc.Input(id="new_end", type="text", placeholder="", style={"width": "130px"})),
+                mini_card("Difficulty", a_function=dcc.Input(id="new_project_diff", type="text", placeholder="", style={"width": "130px"})),
+                mini_card("Project Status", a_function=dcc.Input(id="new_project_start", type="text", placeholder="", style={"width": "130px"})),
+            ],
+            style={"display": "flex"}
+        ),
+        html.Div(
+            children=[
                 content_card_size(
                     id="sub_card",
-                    title="Description",
-                    size="750px", 
-                    height="500px",
+                    title="Project Description",
+                    size="650px", 
+                    height="250px",
                     content=[
-                        html.Div(dcc.Input(id="new_text", type="text", style={"width": "700px", "height": "450px"}))
+                        html.Div(dcc.Input(id="new_text", type="text", style={"width": "600px", "height": "200px"}))
                     ]
                 ),
-                html.Div(
-                    children=[
-                        html.Div(
-                            children=[
-                                mini_card("Rec. Account", a_function=dcc.Input(id="new_account", type="text", placeholder="", style={"width": "130px"})),
-                                mini_card("Cost Center Resp.", a_function=dcc.Input(id="new_account_responsible", type="text", placeholder="", style={"width": "130px"})),
-                            ],
-                            style={"display": "flex"}
-                        ),
-                        html.Div(
-                            children=[
-                                mini_card("Start Date", a_function=dcc.Input(id="new_start", type="text", placeholder="", style={"width": "130px"})),
-                                mini_card("End Date", a_function=dcc.Input(id="new_end", type="text", placeholder="", style={"width": "130px"})),
-                            ],
-                            style={"display": "flex"}
-                        ),
-                        html.Div(
-                            children=[
-                                mini_card("Difficulty", a_function=dcc.Input(id="new_project_diff", type="text", placeholder="", style={"width": "130px"})),
-                                mini_card("Total Budget", a_function=dcc.Input(id="new_budget", type="text", placeholder="", style={"width": "130px"})),
-                            ],
-                            style={"display": "flex"}
-                        ),
-                        html.Div(
-                            children=[
-                                mini_card("Project Status", a_function=dcc.Input(id="new_project_start", type="text", placeholder="", style={"width": "130px"})),
-                                mini_card("Project_ID", a_function=dcc.Input(id="new_projectid", type="text", placeholder="", style={"width": "130px"})),
-                            ],
-                            style={"display": "flex"}
-                        ),
-                    ],
-                    style={"display": "block"}
+                content_card_size(
+                    id="sub_card2",
+                    title="Projects Targets and Goals",
+                    size="650px", 
+                    height="250px",
+                    content=[
+                        html.Div(dcc.Input(id="new_target", type="text", style={"width": "600px", "height": "200px"}))
+                    ]
                 ),
             ],
             style={"display": "flex"}
         ),
+        html.Div(
+            children=[
+                content_card_size(
+                    id="sub_card3",
+                    title="Project Team",
+                    size="650px", 
+                    height="250px",
+                    content=[
+                        html.Div(dcc.Loading(id="table_team"))
+                    ]
+                ),
+                content_card_size(
+                    id="sub_card4",
+                    title="Project Deadlines",
+                    size="650px", 
+                    height="250px",
+                    content=[
+                        html.Div(dcc.Loading(id="table_deadlines"))
+                    ]
+                ),
+            ],
+            style={"display": "flex"}
+        )
     ]
 )
 
@@ -145,13 +123,30 @@ aproject_card = content_card_size(
 asign_project = content_card_size(
     id="asign_project_content",
     title="Asign a Project to a team member",
-    size="1200px", 
+    size="500px", 
     height="200px",
     content=[
         html.Div(
             children=[
-                mini_card("Project_ID", a_function=dcc.Input(id="new_projectid", type="text", placeholder="", style={"width": "130px"})),
                 mini_card("Team_Memeber", a_function=dcc.Input(id="new_projectid", type="text", placeholder="", style={"width": "130px"})),
+                small_icon_card(id="add_button", icon="add", color="white"),
+                small_icon_card(id="delete_button", icon="delete", color="white"),
+            ],
+            style={"display": "flex"}
+        ),
+    ]
+)
+
+add_deadline = content_card_size(
+    id="deadline_project_content",
+    title="Add a deadline",
+    size="700px", 
+    height="200px",
+    content=[
+        html.Div(
+            children=[
+                mini_card("Deadline Date", a_function=dcc.Input(id="new_projectid", type="text", placeholder="", style={"width": "130px"})),
+                mini_card("Deadline Topic", a_function=dcc.Input(id="new_projectid", type="text", placeholder="", style={"width": "130px"})),
                 small_icon_card(id="add_button", icon="add", color="white"),
                 small_icon_card(id="delete_button", icon="delete", color="white"),
             ],
@@ -162,17 +157,19 @@ asign_project = content_card_size(
 
 
 
+
 layout = html.Div(
     children=[
+
+        aproject_card,
         html.Div(
             children=[
-                add_founding_card,
-                add_topic_class_card,
+                asign_project,
+                add_deadline
             ],
             style={"display": "flex"}
         ),
-        aproject_card,
-        asign_project
+        
     ],
     style={"display": "block"}
 )

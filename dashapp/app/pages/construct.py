@@ -75,7 +75,7 @@ table_card = content_card_size(
     id="table_card_content",
     title="Yearly Coverage of Entities",
     size="1224px", 
-    height="500px",
+    height="250px",
     content=[
         html.Div(
             children=[
@@ -92,6 +92,43 @@ table_card = content_card_size(
 
 
 
+
+add_founding_card = content_card_size(
+    id="add_founding_content",
+    title="Add an Founding Source",
+    size="400px", 
+    height="200px",
+    content=[
+        html.Div(
+            children=[
+                mini_card("Founding Source", a_function=dcc.Input(id="add_founding_source", type="text", placeholder="", style={"width": "130px"})),
+                small_icon_card(id="add_source_button", icon="add", color="white"),
+            ],
+            style={"display": "flex"}
+        ),
+    ]
+)
+
+add_topic_class_card = content_card_size(
+    id="add_topic_class_content",
+    title="Add an Topic Class",
+    size="400px", 
+    height="200px",
+    content=[
+        html.Div(
+            children=[
+                mini_card("Topic Class", a_function=dcc.Input(id="add_topic_class", type="text", placeholder="", style={"width": "130px"})),
+                small_icon_card(id="add_topic_button", icon="add", color="white"),
+            ],
+            style={"display": "flex"}
+        ),
+    ]
+)
+
+
+
+
+
 layout = html.Div(
     children=[
         html.Div(
@@ -101,7 +138,14 @@ layout = html.Div(
             ],
             style={"display": "flex"}
         ),
-        table_card
+        table_card,
+        html.Div(
+            children=[
+                add_founding_card,
+                add_topic_class_card
+            ],
+            style={"display": "flex"}
+        )
     ],
     style={"display": "block"}
 )
@@ -248,7 +292,7 @@ def call_data(n_clicks):
         id = "table_entity_time",
         columns=[{"name": str(i), "id": str(i)} for i in pdata.columns],
         data=pdata.to_dict("records"),
-        style_table={"height": "300px", "overflow": "auto", "width": "1200px"},
+        style_table={"height": "200px", "overflow": "auto", "width": "1200px"},
         style_as_list_view=True,
         style_header={"fontweight": "bold", "font-family": "sans-serif"},
         style_cell={
