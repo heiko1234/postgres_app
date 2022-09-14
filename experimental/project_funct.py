@@ -245,3 +245,60 @@ sql = f"""
     """
 execute_sql(sql)
 
+
+
+
+
+
+# sql = f"""
+#     CREATE TABLE project_deadlines (
+#         project_deadlines_id SERIAL PRIMARY KEY,
+#         project_id int REFERENCES project (project_id) ON UPDATE CASCADE ON DELETE CASCADE,
+#         deadline_date DATE,
+#         deadline_text VARCHAR(255),
+#         UNIQUE (deadline_date, deadline_text)
+#     );
+# """
+
+new_date = "2022-10-15"
+deadline_text = "Gate Meeting"
+project_id=1
+
+sql = f"""
+    INSERT INTO project_dealines(project_id, deadline_date, deadline_text) VALUES
+    (
+        (SELECT project_id FROM project WHERE project_id = '{project_id}'),
+        '{new_date}',
+        '{deadline_text}'
+    );
+"""
+execute_sql(sql)
+
+
+
+
+project_id = 1
+sql = f"""
+    SELECT deadline_date, deadline_text FROM project_deadlines
+    WHERE project_id = {project_id}
+    """
+data=execute_sql(sql)
+data
+
+
+data = pd.DataFrame(data, columns=["Date", "Topic"])
+data
+
+
+
+
+
+
+
+
+
+
+
+
+
+

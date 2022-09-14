@@ -176,7 +176,7 @@ asign_project = content_card_size(
     content=[
         html.Div(
             children=[
-                mini_card("Team_Memeber", a_function=dcc.Dropdown(id="single_teammember", options = team_members_options, style={"width": "130px"})),
+                mini_card("Team_Member", a_function=dcc.Dropdown(id="single_teammember", options = team_members_options, style={"width": "130px"})),
                 small_icon_card(id="add_button", icon="add", color="white"),
                 small_icon_card(id="delete_button", icon="delete", color="white"),
             ],
@@ -193,10 +193,10 @@ add_deadline = content_card_size(
     content=[
         html.Div(
             children=[
-                mini_card("Deadline Date", a_function=dcc.Input(id="new_deadlineid", type="text", placeholder="", style={"width": "130px"})),
-                mini_card("Deadline Topic", a_function=dcc.Input(id="new_topicid", type="text", placeholder="", style={"width": "130px"})),
-                small_icon_card(id="add_button", icon="add", color="white"),
-                small_icon_card(id="delete_button", icon="delete", color="white"),
+                mini_card("Deadline Date", a_function=dcc.DatePickerSingle(id="deadline_date", style={"width": "130px"})),
+                mini_card("Deadline Topic", a_function=dcc.Input(id="deadline_topic", type="text", style={"width": "130px"})),
+                small_icon_card(id="add_deadline_button", icon="add", color="white"),
+                small_icon_card(id="delete_deadline_button", icon="delete", color="white"),
             ],
             style={"display": "flex"}
         ),
@@ -217,7 +217,6 @@ layout = html.Div(
             ],
             style={"display": "flex"}
         ),
-        
     ],
     style={"display": "block"}
 )
@@ -226,7 +225,7 @@ layout = html.Div(
 
 
 
-
+# make the callbacks
 
 
 @dash.callback(
@@ -331,7 +330,6 @@ def load_project(project_id):
 
         data = pd.DataFrame(data, columns=["funding", "topic", "topic_class", "argus", "charging", "rec_account", "account_resp", "start", "end", "difficulty", "status", "description", "target"])
 
-
         funding = data.loc[0, "funding"]
         topic = data.loc[0, "topic"]
         topic_class = data.loc[0, "topic_class"]
@@ -402,8 +400,6 @@ def update_project(n_clicks, project_id, funding, topic, topic_class, argus, cha
     return color
 
 
-
-
 @dash.callback(
     Output("add_button", "style"),
     [
@@ -430,8 +426,6 @@ def update_project_teammember(update_button, add_button, project_id, teammember)
     color = {"background-color": "white"}
 
     return color
-
-
 
 
 @dash.callback(
@@ -461,11 +455,6 @@ def delete_project_teammember(delete_button, project_id, teammember):
     return color
 
 
-
-
-
-
-
 @dash.callback(
     Output("table_team", "children"),
     [
@@ -474,6 +463,7 @@ def delete_project_teammember(delete_button, project_id, teammember):
         Input("delete_button_button", "n_clicks"),
         Input("new_projectid", "value"),
 
+
     ]
     # ,prevent_initial_call=True
 )
@@ -481,7 +471,7 @@ def update_project_teammember_table(update_button, add_button, delete_button, pr
 
     if (project_id != None):
 
-        sleep(0.2)
+        sleep(1)
 
         sql = f"""
             SELECT tm.full_name
@@ -497,7 +487,7 @@ def update_project_teammember_table(update_button, add_button, delete_button, pr
 
         data = pd.DataFrame(data, columns=["active PrAI Team members"])
 
-        output_df = dash_table.DataTable(
+        df_team = dash_table.DataTable(
             id = "table_teammembers",
             columns=[{"name": str(i), "id": str(i)} for i in data.columns],
             data=data.to_dict("records"),
@@ -512,6 +502,146 @@ def update_project_teammember_table(update_button, add_button, delete_button, pr
             row_selectable=False,
         )
     else: 
-        output_df = None
+        df_team = None
 
-    return output_df
+    return df_team
+
+
+@dash.callback(
+
+    Output("table_deadlines", "children"),
+    [
+        Input("new_projectid", "value"),
+        Input("add_deadline_button", "n_clicks"),
+        Input("update_project_button", "n_clicks"),
+    ]
+    # ,prevent_initial_call=True
+)
+def update_project_deadlines_table(project_id, deadline_button, update_project_button):
+
+    if (project_id != None):
+
+        sleep(1)
+
+        sql = f"""
+            SELECT deadline_date, deadline_text FROM project_deadlines
+            WHERE project_id = {project_id}
+            """
+        data=execute_sql(sql)
+
+        data = pd.DataFrame(data, columns=["Date", "Topic"])
+
+        df_deadline = dash_table.DataTable(
+            id = "table_deadlines",
+            columns=[{"name": str(i), "id": str(i)} for i in data.columns],
+            data=data.to_dict("records"),
+            style_table={"height": "200px", "overflow": "auto", "width": "300px"},
+            style_as_list_view=True,
+            style_header={"fontweight": "bold", "font-family": "sans-serif"},
+            style_cell={
+                "font-family": "sans-serif", 
+                'overflow': 'hidden',
+                "minWidth": 60
+                },
+            row_selectable="single",
+        )
+
+    else: 
+        df_deadline = None
+
+    return df_deadline
+
+
+
+
+
+@dash.callback(
+    Output("add_deadline_button", "style"),
+    [
+        Input("add_deadline_button", "n_clicks"),
+        Input("delete_deadline_button", "n_clicks"),
+        State("deadline_date", "date"),
+        State("deadline_topic", "value"),
+        State("new_projectid", "value"),
+    ]
+    # ,prevent_initial_call=True
+)
+def update_deadlines_table(add_button, delete_button, deadline_date, deadline_topic, project_id):
+
+    if ((deadline_date != None) and (deadline_topic != None) and (project_id != None)):
+
+        sql = f"""
+            INSERT INTO project_deadlines(project_id, deadline_date, deadline_text) VALUES
+            (
+                (SELECT project_id FROM project WHERE project_id = '{project_id}'),
+                '{deadline_date}',
+                '{deadline_topic}'
+            );
+        """
+        data = execute_sql(sql)
+        data
+
+    color = {"background-color": "white"}
+
+    return color
+
+
+@dash.callback(
+    Output("delete_deadline_button", "style"),
+    [
+        Input("delete_deadline_button", "n_clicks"),
+        State("deadline_date", "date"),
+        State("deadline_topic", "value"),
+        State("new_projectid", "value"),
+    ]
+    # ,prevent_initial_call=True
+)
+def remove_deadlines_table(button, deadline_date, deadline_topic, project_id):
+
+    if ((deadline_date != None) and (deadline_topic != None) and (project_id != None)):
+
+        sql = f"""
+
+            DELETE FROM project_deadlines
+            WHERE
+            project_id in (SELECT project_id FROM project WHERE project_id = '{project_id}')
+            AND
+            deadline_date = '{deadline_date}'
+            AND
+            deadline_text = '{deadline_topic}';
+        """
+        data = execute_sql(sql)
+        data
+
+    color = {"background-color": "white"}
+
+    return color
+
+
+
+
+@dash.callback(
+    [
+        Output("deadline_date", "date"),
+        Output("deadline_topic", "value")
+    ],
+    [
+        Input("table_deadlines", "selected_rows"),
+        Input("table_deadlines", "data"),
+        State("new_projectid", "value"),
+    ]
+    ,prevent_initial_call=True
+)
+def select_table(selected_row, raw_data, projectid):
+
+    if projectid != None:
+
+        data = pd.DataFrame(raw_data, columns=["Date", "Topic"])
+
+        date = list(set(data.loc[selected_row, "Date"]))[0]
+        topic = list(set(data.loc[selected_row, "Topic"]))[0]
+    else:
+        date = topic = None
+
+    return date, topic
+

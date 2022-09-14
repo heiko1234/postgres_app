@@ -262,3 +262,30 @@ execute_sql(sql)
 # sql = "DROP TABLE project_team_members"
 # execute_sql(sql)
 
+
+
+sql = f"""
+    CREATE TABLE project_deadlines (
+        project_deadlines_id SERIAL PRIMARY KEY,
+        project_id int REFERENCES project (project_id) ON UPDATE CASCADE ON DELETE CASCADE,
+        deadline_date DATE,
+        deadline_text VARCHAR(255),
+        UNIQUE (deadline_date, deadline_text)
+    );
+"""
+execute_sql(sql)
+
+
+
+# sql = "DROP TABLE project_deadlines"
+# execute_sql(sql)
+
+
+
+
+
+
+
+
+
+
