@@ -532,7 +532,7 @@ def update_project_deadlines_table(project_id, deadline_button, update_project_b
         data = pd.DataFrame(data, columns=["Date", "Topic"])
 
         df_deadline = dash_table.DataTable(
-            id = "table_deadlines",
+            id = "deadlines_table",
             columns=[{"name": str(i), "id": str(i)} for i in data.columns],
             data=data.to_dict("records"),
             style_table={"height": "200px", "overflow": "auto", "width": "300px"},
@@ -626,8 +626,8 @@ def remove_deadlines_table(button, deadline_date, deadline_topic, project_id):
         Output("deadline_topic", "value")
     ],
     [
-        Input("table_deadlines", "selected_rows"),
-        Input("table_deadlines", "data"),
+        Input("deadlines_table", "selected_rows"),
+        Input("deadlines_table", "data"),
         State("new_projectid", "value"),
     ]
     ,prevent_initial_call=True
