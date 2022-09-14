@@ -33,7 +33,7 @@ dash.register_page(__name__,)
 # )
 
 
-
+# project_id from projects
 sql= "SELECT project_id FROM project"
 data=execute_sql(sql)
 
@@ -43,6 +43,7 @@ list_data.sort()
 project_options = get_option_list(list_data)
 
 
+# founding_sources
 sql= "SELECT founding_source FROM founding_sources"
 data = execute_sql(sql)
 data=pd.DataFrame(data, columns=["founding_source"])
@@ -51,6 +52,7 @@ list_data.sort()
 founding_sources_options = get_option_list(list_data)
 
 
+# topic_class: topics
 sql = """
     SELECT topic_class FROM topic_class
 """
@@ -60,10 +62,24 @@ list_data=list(data["topic_class"])
 # list_data.sort()
 topic_class_options = get_option_list(list_data)
 
+
+
+# teammembers: fullname Dropdown
+sql = """
+    SELECT full_name FROM team_members
+"""
+data = execute_sql(sql)
+data=pd.DataFrame(data, columns=["full_name"])
+list_data=list(data["full_name"])
+list_data.sort()
+team_members_options = get_option_list(list_data)
+
+
+# difficulty options
 option_difficultiy=get_option_list([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+# project status options
 project_status=get_option_list(["Planned", "Approved", "Ongoing", "Completed", "Rejected"])
 
-# dcc.Dropdown(id="i_entity", options=entity_options, style={"width": "130px"})),
 
 
 
@@ -160,7 +176,7 @@ asign_project = content_card_size(
     content=[
         html.Div(
             children=[
-                mini_card("Team_Memeber", a_function=dcc.Input(id="new_teamid", type="text", placeholder="", style={"width": "130px"})),
+                mini_card("Team_Memeber", a_function=dcc.Dropdown(id="single_teammember", options = team_members_options, style={"width": "130px"})),
                 small_icon_card(id="add_button", icon="add", color="white"),
                 small_icon_card(id="delete_button", icon="delete", color="white"),
             ],
@@ -385,3 +401,117 @@ def update_project(n_clicks, project_id, funding, topic, topic_class, argus, cha
 
     return color
 
+
+
+
+@dash.callback(
+    Output("add_button", "style"),
+    [
+        Input("update_project_button", "n_clicks"),
+        Input("add_button_button", "n_clicks"),
+        Input("new_projectid", "value"),
+        State("single_teammember", "value"),
+    ]
+    # ,prevent_initial_call=True
+)
+def update_project_teammember(update_button, add_button, project_id, teammember):
+
+    if ((project_id != None) and (teammember != None)):
+
+        sql = f"""
+            INSERT INTO project_team_members(project_id, team_id) VALUES
+            (
+                (SELECT project_id FROM project WHERE project_id = '{project_id}'),
+                (SELECT team_id FROM team_members WHERE full_name = '{teammember}')
+            )
+        """
+        execute_sql(sql)
+
+    color = {"background-color": "white"}
+
+    return color
+
+
+
+
+@dash.callback(
+    Output("delete_button", "style"),
+    [
+        Input("delete_button_button", "n_clicks"),
+        Input("new_projectid", "value"),
+        State("single_teammember", "value"),
+    ]
+    # ,prevent_initial_call=True
+)
+def delete_project_teammember(delete_button, project_id, teammember):
+
+    if ((project_id != None) and (teammember != None)):
+
+        sql = f"""
+            DELETE FROM project_team_members
+            WHERE
+            project_id in (SELECT project_id FROM project WHERE project_id = '{project_id}')
+            AND
+            team_id in (SELECT team_id FROM team_members WHERE full_name = '{teammember}');
+        """
+        execute_sql(sql)
+
+    color = {"background-color": "white"}
+
+    return color
+
+
+
+
+
+
+
+@dash.callback(
+    Output("table_team", "children"),
+    [
+        Input("update_project_button", "n_clicks"),
+        Input("add_button_button", "n_clicks"),
+        Input("delete_button_button", "n_clicks"),
+        Input("new_projectid", "value"),
+
+    ]
+    # ,prevent_initial_call=True
+)
+def update_project_teammember_table(update_button, add_button, delete_button, project_id):
+
+    if (project_id != None):
+
+        sleep(0.2)
+
+        sql = f"""
+            SELECT tm.full_name
+            FROM team_members tm
+            INNER JOIN project_team_members ptm
+            ON ptm.team_id = tm.team_id
+            INNER JOIN project p
+            ON p.project_id = ptm.project_id
+            WHERE p.project_id = '{project_id}'
+            """
+
+        data = execute_sql(sql)
+
+        data = pd.DataFrame(data, columns=["active PrAI Team members"])
+
+        output_df = dash_table.DataTable(
+            id = "table_teammembers",
+            columns=[{"name": str(i), "id": str(i)} for i in data.columns],
+            data=data.to_dict("records"),
+            style_table={"height": "200px", "overflow": "auto", "width": "300px"},
+            style_as_list_view=True,
+            style_header={"fontweight": "bold", "font-family": "sans-serif"},
+            style_cell={
+                "font-family": "sans-serif", 
+                'overflow': 'hidden',
+                "minWidth": 60
+                },
+            row_selectable=False,
+        )
+    else: 
+        output_df = None
+
+    return output_df

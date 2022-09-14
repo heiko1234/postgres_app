@@ -12,6 +12,8 @@
 import pandas as pd
 import psycopg2
 
+from dashapp.app.pages.construct import entity_dropdown
+
 
 def execute_sql(sql):
     #establishing the connection
@@ -275,7 +277,7 @@ df.pivot(index = "Fullname", columns="Year", values="eff. Coverage").reset_index
 
 
 fullname = "Heiko Kulinna"
-dd_year = 202
+dd_year = 2024
 
 
 # delete combined
@@ -291,6 +293,122 @@ sql = f"""
 data = execute_sql(sql)
 data
 
+
+
+
+sql = """
+    SELECT * FROM team_info
+    """
+
+data = execute_sql(sql)
+data
+
+
+
+year=2025
+contract=100
+working_month=12
+fullname="Heiko Kulinna"
+activity=None
+
+sql = f"""
+    INSERT INTO team_info (team_id, year, contract, working_month, entity_id, activity) VALUES 
+    (
+        (SELECT team_id FROM team_members WHERE full_name = '{fullname}'),
+        '{year}',
+        '{contract}',
+        '{working_month}',
+        (SELECT legal_entity_id FROM team_members WHERE full_name = '{fullname}'),
+        '{activity}'
+    );
+"""
+data=execute_sql(sql = sql)
+data
+
+
+
+sql = f"""
+    SELECT tm.full_name, ti.year, ti.contract, ti.working_month, ti.activity, e.entity_id
+    FROM team_members tm
+    INNER JOIN team_info ti
+    ON tm.team_id = ti.team_id
+    INNER JOIN entity e
+    ON tm.legal_entity_id = e.entity_id
+    """
+data = execute_sql(sql)
+data
+
+
+sql = f"""
+    SELECT tm.full_name, ti.year, ti.contract, ti.working_month, ti.activity, et.coverage, et.entity_id
+    FROM team_members tm
+    INNER JOIN team_info ti
+    ON tm.team_id = ti.team_id
+    INNER JOIN entity_time et
+    ON tm.legal_entity_id = et.entity_id
+    """
+data = execute_sql(sql)
+data
+
+
+
+data = execute_sql(sql)
+data
+data = pd.DataFrame(data, columns = ["fullname", "year", "contract", "workingmonth", "activity", "coverage", "entity"])
+data
+
+
+
+sql = """
+    SELECT * FROM entity_time
+    """
+data = execute_sql(sql)
+data
+
+
+
+sql = f"""
+    SELECT tm.full_name, ti.year, ti.contract, ti.working_month, ti.activity, et.coverage
+    FROM team_members tm
+    INNER JOIN team_info ti
+    ON tm.team_id = ti.team_id
+    INNER JOIN entity e
+    ON tm.legal_entity_id = e.entity_id
+    INNER JOIN entity_time et
+    ON e.entity_id = et.entity_id
+"""
+data = execute_sql(sql)
+
+
+sql = f"""
+    SELECT tm.full_name, ti.year, ti.contract, ti.working_month, ti.activity, et.coverage
+    FROM team_info ti
+    LEFT JOIN team_members tm
+    ON tm.team_id = ti.team_id
+    LEFT JOIN entity e
+    ON tm.legal_entity_id = e.entity_id
+    LEFT JOIN entity_time et
+    ON e.entity_id = et.entity_id
+"""
+data = execute_sql(sql)
+data
+
+
+# team_info: -> team_id, year, entity_id
+# team_members: -> legal_entity_id
+# entity: entity -> entity_id
+# entity_time: -> entity_id: year, coverage
+
+sql = f"""
+    SELECT tm.full_name, ti.year, ti.contract, ti.working_month, ti.activity, tm.legal_entity_id, et.coverage
+    FROM team_members tm
+    INNER JOIN team_info ti
+    ON tm.team_id = ti.team_id
+    INNER JOIN entity_time et
+    ON et.entity_id = tm.legal_entity_id and ti.year = et.year
+"""
+data = execute_sql(sql)
+data
 
 
 

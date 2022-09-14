@@ -191,5 +191,57 @@ data
 
 
 
+project_id = 1
+fullname = "Jenni Willig"
 
+sql = f"""
+    INSERT INTO project_team_members(project_id, team_id) VALUES
+    (
+        (SELECT project_id FROM project WHERE project_id = '{project_id}'),
+        (SELECT team_id FROM team_members WHERE full_name = '{fullname}')
+    )
+"""
+execute_sql(sql)
+
+
+
+project_id = 1
+# full table für alle leute, tabelle
+sql = f"""
+    SELECT tm.full_name
+    FROM team_members tm
+    INNER JOIN project_team_members ptm
+    ON ptm.team_id = tm.team_id
+    INNER JOIN project p
+    ON p.project_id = ptm.project_id
+    WHERE p.project_id = '{project_id}'
+    """
+
+data = execute_sql(sql)
+data
+
+data = pd.DataFrame(data, columns=["Teammembers"])
+data
+
+
+
+
+
+project_id = 1
+fullname = "Heiko Kulinna"
+
+sql = f"""
+    DELETE FROM project_team_members
+    WHERE
+    project_id in (SELECT project_id FROM project WHERE project_id = '{project_id}')
+    AND
+    team_id in (SELECT team_id FROM team_members WHERE full_name = '{fullname}');
+"""
+execute_sql(sql)
+
+
+sql = f"""
+    SELECT * FROM project_team_members
+    """
+execute_sql(sql)
 

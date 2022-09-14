@@ -33,7 +33,8 @@ def execute_sql(sql):
     return result
 
 
-
+# sql = "DROP DATABASE team"
+#sql = "CREATE DATABASE team"
 
 
 sql = """CREATE TABLE entity (
@@ -42,6 +43,7 @@ sql = """CREATE TABLE entity (
         UNIQUE(entity_name)
     )
     """
+execute_sql(sql)
 
 
 sql = """
@@ -53,7 +55,7 @@ sql = """
         coverage integer NOT NULL
     );
 """
-
+execute_sql(sql)
 
 
 #Name, Surname, Full Name, UserID, Email, LEgal Entity, Contract Year, Contract, Budget required, Activity
@@ -64,6 +66,7 @@ sql = """
             pre_name VARCHAR(100) NOT NULL,
             sur_name VARCHAR(150) NOT NULL,
             full_name VARCHAR(255) NOT NULL,
+            UNIQUE(full_name),
             email text,
             user_id text NOT NULL,
             legal_entity_id BIGINT,
@@ -71,13 +74,17 @@ sql = """
             status VARCHAR(20)
     )
 """
+execute_sql(sql)
+
 
 sql = """
         CREATE TABLE ods (
             od_id SERIAL PRIMARY KEY,
-            od_name VARCHAR(10) NOT NULL
+            od_name VARCHAR(10) NOT NULL,
+            UNIQUE(od_name)
         )
 """
+execute_sql(sql)
 
 
 sql = """
@@ -90,6 +97,7 @@ sql = """
             project_desc TEXT
         )
 """
+execute_sql(sql)
 
 
 sql = """
@@ -106,12 +114,15 @@ sql = """
             FOREIGN KEY (entity_id)
                 REFERENCES entity (entity_id)
                 ON UPDATE CASCADE ON DELETE CASCADE,
-            activity VARCHAR(255)
+            activity VARCHAR(255),
+            UNIQUE (year, team_id)
         )
 """
+execute_sql(sql)
+
 
 # sql = "DROP TABLE team_info"
-
+# execute_sql(sql)
 
 
 sql = """
@@ -121,6 +132,8 @@ sql = """
             UNIQUE(founding_source)
         )
 """
+execute_sql(sql)
+
 
 sql = """
         CREATE TABLE topic_class (
@@ -129,11 +142,12 @@ sql = """
             UNIQUE(topic_class)
         )
 """
-
-sql = "DROP TABLE founding_sources"
-sql = "DROP TABLE topic_class"
-
 execute_sql(sql)
+
+
+# sql = "DROP TABLE founding_sources"
+# sql = "DROP TABLE topic_class"
+# execute_sql(sql)
 
 
 
@@ -237,8 +251,14 @@ execute_sql(sql)
 
 
 
+sql = f"""CREATE TABLE project_team_members (
+    project_id int REFERENCES project (project_id) ON UPDATE CASCADE ON DELETE CASCADE,
+    team_id int REFERENCES team_members (team_id) ON UPDATE CASCADE ON DELETE CASCADE,
+    UNIQUE (project_id, team_id)
+    );
+"""
+execute_sql(sql)
 
-
-
-
+# sql = "DROP TABLE project_team_members"
+# execute_sql(sql)
 

@@ -10,6 +10,7 @@
 
 
 import psycopg2
+import pandas as pd
 
 
 
@@ -65,6 +66,15 @@ def execute_sql(sql):
 
 
 sql = "SELECT * FROM entity"
+execute_sql(sql)
+
+
+
+sql = "SELECT * FROM entity_time"
+data=execute_sql(sql)
+
+data = pd.DataFrame(data, columns=["id", "year", "entity_id", "coverage"])
+data
 
 
 sql = "ALTER TABLE IF EXISTS public.entity ADD COLUMN entity_id serial NOT NULL;"

@@ -396,12 +396,12 @@ def update_calculation_budget(fullname, year, contract, month):
 @dash.callback(
     Output("table_team_card_id", "children"),
     [
-        Input("m_fullname", "value"),
-        Input("team_table_dd", "value")
+        Input("team_table_dd", "value"),
+        Input("update_m_button", "n_clicks"),
     ]
     # ,prevent_initial_call=True
 )
-def call_datatable(n_clicks, dd_team):
+def call_datatable(dd_team, n_clicks_update):
 
     sleep(0.5)
 
@@ -410,15 +410,11 @@ def call_datatable(n_clicks, dd_team):
         FROM team_members tm
         INNER JOIN team_info ti
         ON tm.team_id = ti.team_id
-        INNER JOIN entity e
-        ON tm.legal_entity_id = e.entity_id
         INNER JOIN entity_time et
-        ON e.entity_id = et.entity_id
-        """
-
-
+        ON et.entity_id = tm.legal_entity_id and ti.year = et.year
+    """
     data = execute_sql(sql)
-    data
+
 
     df = pd.DataFrame(data, columns=["Fullname", "Year", "Contract", "Working Month", "Activity", "Coverage"])
 
@@ -426,9 +422,6 @@ def call_datatable(n_clicks, dd_team):
     df["eff. Coverage"] = round(df["Contract"] * df["Working Month"] * df["Coverage"] * 1/100 * 1/12,1)
 
     pdf = df.pivot(index = "Fullname", columns="Year", values=dd_team).reset_index(drop=False)
-
-
-
 
     output_df = dash_table.DataTable(
         id = "table_entity_time",
@@ -471,31 +464,28 @@ def new_entity(n_clicks, fullname, year, contract, working_month, activity):
 
     color = {"background-color": "white"}
 
-
     sql = f"""
             DELETE from team_info 
             WHERE
             team_id in (SELECT team_id FROM team_members WHERE full_name = '{fullname}')
             AND
-            team_info.year = '{year}';
+            team_info.year = '{int(year)}';
     """
     data=execute_sql(sql = sql)
-    data
 
 
     sql = f"""
         INSERT INTO team_info (team_id, year, contract, working_month, entity_id, activity) VALUES 
         (
             (SELECT team_id FROM team_members WHERE full_name = '{fullname}'),
-            '{year}',
-            '{contract}',
-            '{working_month}',
+            '{int(year)}',
+            '{int(contract)}',
+            '{int(working_month)}',
             (SELECT legal_entity_id FROM team_members WHERE full_name = '{fullname}'),
             '{activity}'
         );
     """
     data=execute_sql(sql = sql)
-    data
 
     return color
 
