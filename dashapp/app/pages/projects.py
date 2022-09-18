@@ -161,6 +161,15 @@ aproject_card = content_card_size(
                         html.Div(dcc.Loading(id="table_deadlines"))
                     ]
                 ),
+                content_card_size(
+                    id="sub_card5",
+                    title="Project Budget",
+                    size="400px", 
+                    height="250px",
+                    content=[
+                        html.Div(dcc.Loading(id="table_yearly_budget"))
+                    ]
+                ),
             ],
             style={"display": "flex"}
         )
@@ -197,6 +206,26 @@ add_deadline = content_card_size(
                 mini_card("Deadline Topic", a_function=dcc.Input(id="deadline_topic", type="text", style={"width": "130px"})),
                 small_icon_card(id="add_deadline_button", icon="add", color="white"),
                 small_icon_card(id="delete_deadline_button", icon="delete", color="white"),
+            ],
+            style={"display": "flex"}
+        ),
+    ]
+)
+
+
+add_yearly_budget = content_card_size(
+    id="yearly_budget_content",
+    title="Add yearly budget",
+    size="800px", 
+    height="200px",
+    content=[
+        html.Div(
+            children=[
+                mini_card("Year", a_function=dcc.Input(id="budget_year", type="number", min=2000, max=2100, step=1, value=this_year, style={"width": "130px"})),
+                mini_card("Budget", a_function=dcc.Input(id="yearly_budget", type="number", min=0, style={"width": "130px"})),
+                small_icon_card(id="add_budget_button", icon="add", color="white"),
+                small_icon_card(id="update_budget_button", icon="update", color="white"),
+                small_icon_card(id="delete_budget_button", icon="delete", color="white"),
             ],
             style={"display": "flex"}
         ),
@@ -249,10 +278,11 @@ layout = html.Div(
         html.Div(
             children=[
                 assign_project,
-                add_deadline
+                add_deadline,
             ],
             style={"display": "flex"}
         ),
+        add_yearly_budget,
         table_card
     ],
     style={"display": "block"}
@@ -576,7 +606,7 @@ def update_project_deadlines_table(project_id, deadline_button, update_project_b
             id = "deadlines_table",
             columns=[{"name": str(i), "id": str(i)} for i in data.columns],
             data=data.to_dict("records"),
-            style_table={"height": "200px", "overflow": "auto", "width": "300px"},
+            style_table={"height": "200px", "overflow": "auto", "width": "400px"},
             style_as_list_view=True,
             style_header={"fontweight": "bold", "font-family": "sans-serif"},
             style_cell={
@@ -701,7 +731,7 @@ def select_table(selected_row, raw_data, projectid):
     # ,prevent_initial_call=True
     # , suppress_callback_exceptions=True
 )
-def update_project_deadlines_table(update_project_button, add_project_button, project_id_value):
+def update_project_table(update_project_button, add_project_button, project_id_value):
 
     sql="""
         SELECT p.project_id, p.topic, tc.topic_class, fs.founding_source, p.project_description
@@ -737,11 +767,142 @@ def update_project_deadlines_table(update_project_button, add_project_button, pr
 
 
 
+@dash.callback(
+
+    Output("table_yearly_budget", "children"),
+    [
+        Input("new_projectid", "value"),
+        Input("add_budget_button", "n_clicks"),
+        Input("update_budget_button", "n_clicks"),
+        Input("delete_budget_button", "n_clicks")
+    ]
+    # ,prevent_initial_call=True
+    # , suppress_callback_exceptions=True
+)
+def update_project_budget_table(project_id, add_budget_button, update_budget_button, delete_budget_button):
+
+    if project_id != None:
+
+        sleep(0.1)
+
+        sql=f"""
+            SELECT pbp.year, pbp.budget
+            FROM project_budget_planning pbp
+            WHERE project_id = {project_id}
+        """
+        data=execute_sql(sql)
+
+        data = pd.DataFrame(data, columns=["Year", "Budget"])
+
+        data = data.sort_values(by="Year")
+
+        df_budget_table = dash_table.DataTable(
+            id = "project_budget_table",
+            columns=[{"name": str(i), "id": str(i)} for i in data.columns],
+            data=data.to_dict("records"),
+            style_table={"height": "400px", "overflow": "auto", "width": "300px"},
+            style_as_list_view=True,
+            style_header={"fontweight": "bold", "font-family": "sans-serif"},
+            style_cell={
+                "font-family": "sans-serif", 
+                'overflow': 'hidden',
+                "minWidth": 60
+                },
+            row_selectable=False,
+        )
+    
+    else:
+        df_budget_table = None
+
+    return df_budget_table
 
 
 
 
+@dash.callback(
+    Output("add_budget_button", "style"),
+    [
+        Input("add_budget_button", "n_clicks"),
+        State("new_projectid", "value"),
+        State("budget_year", "value"),
+        State("yearly_budget", "value")
+    ]
+)
+def add_project_budget(add_budget_button, project_id, budget_year, yearly_budget):
+
+    if ((project_id != None) and (budget_year != None) and (yearly_budget != None)):
+
+        sql = f"""
+            INSERT INTO project_budget_planning (project_id, year, budget) VALUES
+            (
+                (SELECT project_id FROM project WHERE project_id = '{project_id}'),
+                '{budget_year}',
+                '{yearly_budget}'
+            );
+        """
+
+        data=execute_sql(sql)
+
+        color = {"background-color": "white"}
+
+        return color
 
 
+
+@dash.callback(
+    Output("delete_budget_button", "style"),
+    [
+        Input("delete_budget_button", "n_clicks"),
+        State("new_projectid", "value"),
+        State("budget_year", "value"),
+    ]
+)
+def delete_project_budget(delete_budget_button, project_id, budget_year):
+
+    if ((project_id != None) and (budget_year != None)):
+
+        sql = f"""
+        DELETE FROM project_budget_planning
+        WHERE
+        project_id in (SELECT project_id FROM project WHERE project_id = '{project_id}')
+        AND
+        year = '{budget_year}';
+        """
+
+        data=execute_sql(sql)
+
+        color = {"background-color": "white"}
+
+        return color
+
+
+
+
+@dash.callback(
+    Output("update_budget_button", "style"),
+    [
+        Input("update_budget_button", "n_clicks"),
+        State("new_projectid", "value"),
+        State("budget_year", "value"),
+        State("yearly_budget", "value")
+    ]
+)
+def delete_project_budget(delete_budget_button, project_id, budget_year, yearly_budget):
+
+    if ((project_id != None) and (budget_year != None)):
+
+        sql = f"""
+            UPDATE project_budget_planning
+            SET
+            project_id = (SELECT project_id FROM project WHERE project_id = '{project_id}'),
+            year = '{budget_year}',
+            budget = '{yearly_budget}'
+            WHERE project_id = '{project_id}' AND year = '{budget_year}';
+        """
+        execute_sql(sql)
+
+        color = {"background-color": "white"}
+
+        return color
 
 

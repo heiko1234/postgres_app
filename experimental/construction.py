@@ -281,11 +281,47 @@ execute_sql(sql)
 # execute_sql(sql)
 
 
+# sql = "DROP TABLE project_budget_planning"
+# execute_sql(sql)
+
+
+sql = """
+    CREATE Table project_budget_planning 
+    (
+        pbp_id SERIAL UNIQUE PRIMARY KEY,
+        year integer NOT NULL,
+        project_id integer NOT NULL,
+        FOREIGN KEY (project_id) 
+            REFERENCES project (project_id) 
+            ON UPDATE CASCADE ON DELETE CASCADE,
+        budget integer NOT NULL,
+        UNIQUE (year, project_id)
+    );
+"""
+execute_sql(sql)
 
 
 
-
-
+sql = """
+    CREATE Table project_time_budget 
+    (
+        ptb_id SERIAL UNIQUE PRIMARY KEY,
+        year integer NOT NULL,
+        month integer NOT NULL,
+        team_id INTEGER NOT NULL,
+        FOREIGN KEY (team_id)
+            REFERENCES team_members (team_id)
+            ON UPDATE CASCADE ON DELETE CASCADE,
+        working_hours integer,
+        working_booking integer,
+        project_id integer NOT NULL,
+        FOREIGN KEY (project_id) 
+            REFERENCES project (project_id) 
+            ON UPDATE CASCADE ON DELETE CASCADE,
+        UNIQUE (year, month, team_id, project_id)
+    );
+"""
+execute_sql(sql)
 
 
 

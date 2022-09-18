@@ -359,6 +359,76 @@ data
 
 
 
+# CREATE Table project_budget_planning 
+# (
+#     pbp_id SERIAL UNIQUE PRIMARY KEY,
+#     year integer NOT NULL,
+#     project_id integer NOT NULL,
+#     FOREIGN KEY (project_id) 
+#         REFERENCES project (project_id) 
+#         ON UPDATE CASCADE ON DELETE CASCADE,
+#     budget integer NOT NULL,
+#     UNIQUE (year, project_id)
+# );
+
+# INSERT INTO project_budget_planing (project_id, year, budget) VALUES
+# (
+#     {project_id},
+#     {budget_year},
+#     {yearly_budget}
+# );
 
 
+project_id = 1
+budget_year = 2022
+yearly_budget = 500
+
+
+sql = f"""
+    INSERT INTO project_budget_planning (project_id, year, budget) VALUES
+    (
+        (SELECT project_id FROM project WHERE project_id = '{project_id}'),
+        '{budget_year}',
+        '{yearly_budget}'
+    );
+"""
+execute_sql(sql)
+
+
+sql = "SELECT * FROM project_budget_planning"
+execute_sql(sql)
+
+
+project_id = 1
+budget_year = 2022
+
+sql = f"""
+        DELETE FROM project_budget_planning
+        WHERE
+        project_id = '{project_id}'
+        AND
+        year = '{budget_year}';
+        """
+execute_sql(sql)
+
+
+
+project_id = 1
+budget_year = 2022
+yearly_budget = 480
+
+sql = f"""
+    UPDATE project_budget_planning
+    SET
+    project_id = (SELECT project_id FROM project WHERE project_id = '{project_id}'),
+    year = '{budget_year}',
+    budget = '{yearly_budget}'
+    WHERE project_id = '{project_id}' AND year = '{budget_year}';
+"""
+execute_sql(sql)
+
+
+
+sql = "SELECT * FROM project_budget_planning"
+execute_sql(sql)
 
