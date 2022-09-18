@@ -126,7 +126,7 @@ aproject_card = content_card_size(
                     size="650px", 
                     height="250px",
                     content=[
-                        html.Div(dcc.Input(id="new_text", type="text", style={"width": "600px", "height": "200px"}))
+                        html.Div(dcc.Textarea(id="new_text", style={"width": "600px", "height": "200px"}))
                     ]
                 ),
                 content_card_size(
@@ -135,7 +135,7 @@ aproject_card = content_card_size(
                     size="650px", 
                     height="250px",
                     content=[
-                        html.Div(dcc.Input(id="new_target", type="text", style={"width": "600px", "height": "200px"}))
+                        html.Div(dcc.Textarea(id="new_target", style={"width": "600px", "height": "200px"}))
                     ]
                 ),
             ],
@@ -168,9 +168,9 @@ aproject_card = content_card_size(
 )
 
 
-asign_project = content_card_size(
-    id="asign_project_content",
-    title="Asign a Project to a team member",
+assign_project = content_card_size(
+    id="assign_project_content",
+    title="Assign a Project to a team member",
     size="500px", 
     height="200px",
     content=[
@@ -204,6 +204,42 @@ add_deadline = content_card_size(
 )
 
 
+table_card = content_card_size(
+    id="table_card_projects_content",
+    title="Project Overview",
+    size="1500px", 
+    height="500px",
+    content=[
+        html.Div(
+            children=[
+                html.Div(children=[
+                    mini_card("Year", 
+                        a_function=dcc.Dropdown(
+                            id="projects_year", 
+                            )
+                        ),
+                    mini_card("Team Member", 
+                        a_function=dcc.Dropdown(
+                            id="projects_teammember", 
+                            )
+                        ),
+                    ],
+                    style={"display": "flex"}
+                ),
+                html.H3(""),
+                dcc.Markdown("\n---\n"),
+                html.H3(""),
+                html.Div(
+                    [
+                        dcc.Loading(id="table_projects_overview")
+                    ]
+                )
+            ],
+            style={"display": "block"}
+        ),
+    ]
+)
+
 
 
 layout = html.Div(
@@ -212,11 +248,12 @@ layout = html.Div(
         aproject_card,
         html.Div(
             children=[
-                asign_project,
+                assign_project,
                 add_deadline
             ],
             style={"display": "flex"}
         ),
+        table_card
     ],
     style={"display": "block"}
 )
@@ -514,10 +551,12 @@ def update_project_teammember_table(update_button, add_button, delete_button, pr
         Input("new_projectid", "value"),
         Input("add_deadline_button", "n_clicks"),
         Input("update_project_button", "n_clicks"),
+        Input("delete_deadline_button", "n_clicks"),
     ]
     # ,prevent_initial_call=True
+    , suppress_callback_exceptions=True
 )
-def update_project_deadlines_table(project_id, deadline_button, update_project_button):
+def update_project_deadlines_table(project_id, deadline_button, update_project_button, delete_deadline_button):
 
     if (project_id != None):
 
@@ -530,6 +569,8 @@ def update_project_deadlines_table(project_id, deadline_button, update_project_b
         data=execute_sql(sql)
 
         data = pd.DataFrame(data, columns=["Date", "Topic"])
+
+        data = data.sort_values(by="Date")
 
         df_deadline = dash_table.DataTable(
             id = "deadlines_table",
@@ -559,14 +600,14 @@ def update_project_deadlines_table(project_id, deadline_button, update_project_b
     Output("add_deadline_button", "style"),
     [
         Input("add_deadline_button", "n_clicks"),
-        Input("delete_deadline_button", "n_clicks"),
         State("deadline_date", "date"),
         State("deadline_topic", "value"),
         State("new_projectid", "value"),
     ]
     # ,prevent_initial_call=True
+    , suppress_callback_exceptions=True
 )
-def update_deadlines_table(add_button, delete_button, deadline_date, deadline_topic, project_id):
+def update_deadlines_table(add_button, deadline_date, deadline_topic, project_id):
 
     if ((deadline_date != None) and (deadline_topic != None) and (project_id != None)):
 
@@ -595,6 +636,7 @@ def update_deadlines_table(add_button, delete_button, deadline_date, deadline_to
         State("new_projectid", "value"),
     ]
     # ,prevent_initial_call=True
+    , suppress_callback_exceptions=True
 )
 def remove_deadlines_table(button, deadline_date, deadline_topic, project_id):
 
@@ -630,11 +672,12 @@ def remove_deadlines_table(button, deadline_date, deadline_topic, project_id):
         Input("deadlines_table", "data"),
         State("new_projectid", "value"),
     ]
-    ,prevent_initial_call=True
+    # ,prevent_initial_call=True
+    , suppress_callback_exceptions=True
 )
 def select_table(selected_row, raw_data, projectid):
 
-    if projectid != None:
+    if ((projectid != None) and (raw_data != None) and (selected_row != None)):
 
         data = pd.DataFrame(raw_data, columns=["Date", "Topic"])
 
@@ -644,4 +687,61 @@ def select_table(selected_row, raw_data, projectid):
         date = topic = None
 
     return date, topic
+
+
+
+@dash.callback(
+
+    Output("table_projects_overview", "children"),
+    [
+        Input("update_project_button", "n_clicks"),
+        Input("add_button_button", "n_clicks"),
+        Input("new_projectid", "value")
+    ]
+    # ,prevent_initial_call=True
+    # , suppress_callback_exceptions=True
+)
+def update_project_deadlines_table(update_project_button, add_project_button, project_id_value):
+
+    sql="""
+        SELECT p.project_id, p.topic, tc.topic_class, fs.founding_source, p.project_description
+        FROM project p
+        INNER JOIN founding_sources fs
+        ON p.funding_id = fs.founding_source_id
+        INNER JOIN topic_class tc
+        ON p.topic_class_id = tc.topic_class_id
+    """
+    data=execute_sql(sql)
+
+    data = pd.DataFrame(data, columns=["project_id", "Topic", "Topic_Class", "Founding Source", "Project Desc."])
+
+    data = data.sort_values(by="project_id")
+
+    df_projects = dash_table.DataTable(
+        id = "projects_table",
+        columns=[{"name": str(i), "id": str(i)} for i in data.columns],
+        data=data.to_dict("records"),
+        style_table={"height": "400px", "overflow": "auto", "width": "1300px"},
+        style_as_list_view=True,
+        style_header={"fontweight": "bold", "font-family": "sans-serif"},
+        style_cell={
+            "font-family": "sans-serif", 
+            'overflow': 'hidden',
+            "minWidth": 60
+            },
+        row_selectable="single",
+    )
+
+    return df_projects
+
+
+
+
+
+
+
+
+
+
+
 

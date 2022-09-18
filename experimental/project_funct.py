@@ -294,6 +294,66 @@ data
 
 
 
+####
+#
+#  sql = """
+#         CREATE TABLE project (
+#             project_id SERIAL PRIMARY KEY,
+#             funding_id BIGINT NOT NULL,
+#             FOREIGN KEY (funding_id)
+#                 REFERENCES founding_sources (founding_source_id)
+#                 ON UPDATE CASCADE ON DELETE CASCADE,
+#             topic VARCHAR(255) NOT NULL,
+#             topic_class_id BIGINT NOT NULL,
+#             FOREIGN KEY (topic_class_id)
+#                 REFERENCES topic_class (topic_class_id)
+#                 ON UPDATE CASCADE ON DELETE CASCADE,
+#             argus_enabled VARCHAR(5) NOT NULL,
+#             way_charging VARCHAR(10) NOT NULL,
+#             recieving_account VARCHAR(50),
+#             cost_center_respon VARCHAR(255),
+#             start_date DATE,
+#             end_date DATE,
+#             difficulty integer,
+#             project_status VARCHAR(50),
+#             project_description TEXT,
+#             project_goals TEXT
+#         )
+#         """
+
+#     SELECT tm.full_name
+    # FROM team_members tm
+    # INNER JOIN project_team_members ptm
+    # ON ptm.team_id = tm.team_id
+    # INNER JOIN project p
+    # ON p.project_id = ptm.project_id
+
+
+sql="""
+    SELECT p.project_id, p.topic, tc.topic_class, fs.founding_source, tm.full_name
+    FROM project p
+    INNER JOIN founding_sources fs
+    ON p.funding_id = fs.founding_source_id
+    INNER JOIN topic_class tc
+    ON p.topic_class_id = tc.topic_class_id
+    INNER JOIN project_team_members ptm
+    ON ptm.project_id = p.project_id
+    INNER JOIN team_members tm
+    ON ptm.team_id = tm.team_id
+"""
+
+
+sql="""
+    SELECT p.project_id, p.topic, tc.topic_class, fs.founding_source, p.project_description
+    FROM project p
+    INNER JOIN founding_sources fs
+    ON p.funding_id = fs.founding_source_id
+    INNER JOIN topic_class tc
+    ON p.topic_class_id = tc.topic_class_id
+"""
+
+data=execute_sql(sql)
+data
 
 
 
