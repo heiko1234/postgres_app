@@ -316,7 +316,8 @@ layout = html.Div(
         State("new_text", "value"),
         State("new_target", "value")
     ]
-    ,prevent_initial_call=True
+    , prevent_initial_call=True
+    , suppress_callback_exceptions=True
 )
 def new_project(n_clicks, funding, topic, topic_class, argus, charging, rec_account, account_resp, start, end, difficulty, status, description, target):
 
@@ -377,7 +378,8 @@ def new_project(n_clicks, funding, topic, topic_class, argus, charging, rec_acco
     [
         Input("new_projectid", "value"),
     ]
-    ,prevent_initial_call=True
+    , prevent_initial_call=True
+    , suppress_callback_exceptions=True
 )
 def load_project(project_id):
 
@@ -437,7 +439,8 @@ def load_project(project_id):
         State("new_text", "value"),
         State("new_target", "value")
     ]
-    ,prevent_initial_call=True
+    , prevent_initial_call=True
+    , suppress_callback_exceptions=True
 )
 def update_project(n_clicks, project_id, funding, topic, topic_class, argus, charging, rec_account, account_resp, start, end, difficulty, status, description, target):
 
@@ -475,7 +478,8 @@ def update_project(n_clicks, project_id, funding, topic, topic_class, argus, cha
         Input("new_projectid", "value"),
         State("single_teammember", "value"),
     ]
-    # ,prevent_initial_call=True
+    , prevent_initial_call=True
+    , suppress_callback_exceptions=True
 )
 def update_project_teammember(update_button, add_button, project_id, teammember):
 
@@ -502,7 +506,8 @@ def update_project_teammember(update_button, add_button, project_id, teammember)
         Input("new_projectid", "value"),
         State("single_teammember", "value"),
     ]
-    # ,prevent_initial_call=True
+    , prevent_initial_call=True
+    , suppress_callback_exceptions=True
 )
 def delete_project_teammember(delete_button, project_id, teammember):
 
@@ -529,10 +534,9 @@ def delete_project_teammember(delete_button, project_id, teammember):
         Input("add_button_button", "n_clicks"),
         Input("delete_button_button", "n_clicks"),
         Input("new_projectid", "value"),
-
-
     ]
-    # ,prevent_initial_call=True
+    , prevent_initial_call=True
+    , suppress_callback_exceptions=True
 )
 def update_project_teammember_table(update_button, add_button, delete_button, project_id):
 
@@ -583,7 +587,7 @@ def update_project_teammember_table(update_button, add_button, delete_button, pr
         Input("update_project_button", "n_clicks"),
         Input("delete_deadline_button", "n_clicks"),
     ]
-    # ,prevent_initial_call=True
+    , prevent_initial_call=True
     , suppress_callback_exceptions=True
 )
 def update_project_deadlines_table(project_id, deadline_button, update_project_button, delete_deadline_button):
@@ -634,7 +638,7 @@ def update_project_deadlines_table(project_id, deadline_button, update_project_b
         State("deadline_topic", "value"),
         State("new_projectid", "value"),
     ]
-    # ,prevent_initial_call=True
+    , prevent_initial_call=True
     , suppress_callback_exceptions=True
 )
 def update_deadlines_table(add_button, deadline_date, deadline_topic, project_id):
@@ -665,7 +669,7 @@ def update_deadlines_table(add_button, deadline_date, deadline_topic, project_id
         State("deadline_topic", "value"),
         State("new_projectid", "value"),
     ]
-    # ,prevent_initial_call=True
+    , prevent_initial_call=True
     , suppress_callback_exceptions=True
 )
 def remove_deadlines_table(button, deadline_date, deadline_topic, project_id):
@@ -702,7 +706,7 @@ def remove_deadlines_table(button, deadline_date, deadline_topic, project_id):
         Input("deadlines_table", "data"),
         State("new_projectid", "value"),
     ]
-    # ,prevent_initial_call=True
+    , prevent_initial_call=True
     , suppress_callback_exceptions=True
 )
 def select_table(selected_row, raw_data, projectid):
@@ -728,8 +732,8 @@ def select_table(selected_row, raw_data, projectid):
         Input("add_button_button", "n_clicks"),
         Input("new_projectid", "value")
     ]
-    # ,prevent_initial_call=True
-    # , suppress_callback_exceptions=True
+    , prevent_initial_call=True
+    , suppress_callback_exceptions=True
 )
 def update_project_table(update_project_button, add_project_button, project_id_value):
 
@@ -776,8 +780,8 @@ def update_project_table(update_project_button, add_project_button, project_id_v
         Input("update_budget_button", "n_clicks"),
         Input("delete_budget_button", "n_clicks")
     ]
-    # ,prevent_initial_call=True
-    # , suppress_callback_exceptions=True
+    , prevent_initial_call=True
+    , suppress_callback_exceptions=True
 )
 def update_project_budget_table(project_id, add_budget_button, update_budget_button, delete_budget_button):
 
@@ -827,6 +831,8 @@ def update_project_budget_table(project_id, add_budget_button, update_budget_but
         State("budget_year", "value"),
         State("yearly_budget", "value")
     ]
+    , prevent_initial_call=True
+    , suppress_callback_exceptions=True
 )
 def add_project_budget(add_budget_button, project_id, budget_year, yearly_budget):
 
@@ -856,6 +862,8 @@ def add_project_budget(add_budget_button, project_id, budget_year, yearly_budget
         State("new_projectid", "value"),
         State("budget_year", "value"),
     ]
+    , prevent_initial_call=True
+    , suppress_callback_exceptions=True
 )
 def delete_project_budget(delete_budget_button, project_id, budget_year):
 
@@ -886,6 +894,8 @@ def delete_project_budget(delete_budget_button, project_id, budget_year):
         State("budget_year", "value"),
         State("yearly_budget", "value")
     ]
+    , prevent_initial_call=True
+    , suppress_callback_exceptions=True
 )
 def delete_project_budget(delete_budget_button, project_id, budget_year, yearly_budget):
 

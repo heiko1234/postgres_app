@@ -29,7 +29,7 @@ sidebar = html.Div(
         ),
         icon_and_text(id="side_user", text="Team", icon="user", href=dash.page_registry['pages.team']['path']),
         icon_and_text(id="side_project", text="Projects", icon="idea", href=dash.page_registry['pages.projects']['path']),
-        icon_and_text(id="side_money", text="Costs", icon="money1", href=dash.page_registry['pages.costs']['path']),
+        icon_and_text(id="side_booking", text="Booking", icon="money1", href=dash.page_registry['pages.booking']['path']),
         icon_and_text(id="side_analysis", text="Analysis", icon="analysis3", href=dash.page_registry['pages.analysis']['path']),
         icon_and_text(id="side_increase", text="Benefit", icon="increase", href=dash.page_registry['pages.increase']['path']),
         html.H3(""),
