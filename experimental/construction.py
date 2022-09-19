@@ -87,17 +87,17 @@ sql = """
 execute_sql(sql)
 
 
-sql = """
-        CREATE TABLE projects (
-            project_id SERIAL PRIMARY KEY,
-            project_od INTEGER NOT NULL,
-            FOREIGN KEY (project_od)
-                REFERENCES ods (od_id)
-                ON UPDATE CASCADE ON DELETE CASCADE,
-            project_desc TEXT
-        )
-"""
-execute_sql(sql)
+# sql = """
+#         CREATE TABLE projects (
+#             project_id SERIAL PRIMARY KEY,
+#             project_od INTEGER NOT NULL,
+#             FOREIGN KEY (project_od)
+#                 REFERENCES ods (od_id)
+#                 ON UPDATE CASCADE ON DELETE CASCADE,
+#             project_desc TEXT
+#         )
+# """
+# execute_sql(sql)
 
 
 sql = """
@@ -246,6 +246,11 @@ sql = """
             project_goals TEXT
         )
 """
+
+#             project_od INTEGER NOT NULL,
+#             FOREIGN KEY (project_od)
+#                 REFERENCES ods (od_id)
+#                 ON UPDATE CASCADE ON DELETE CASCADE,
 
 execute_sql(sql)
 
