@@ -192,3 +192,59 @@ for project_id in list(new_df["project_id"]):
 
 
 
+
+# 
+# 
+
+
+sql = f"""
+    SELECT project_id, month, working_hours FROM project_time_budget
+    WHERE team_id in (SELECT team_id FROM team_members WHERE full_name = '{overview_teammember}')
+    AND year = '{overview_year}';
+"""
+
+data=execute_sql(sql = sql)
+data
+
+
+data = pd.DataFrame(data, columns=["project_id", "month", "working_days"])
+data
+
+
+data = data.pivot(index="project_id", columns="month", values="working_days")
+data
+
+data = data/20 * 170/12
+data = round(data,1)
+data
+
+
+
+full_name = "Heiko Kulinna"
+year = 2022
+
+
+sql = f"""
+    SELECT et.coverage, tm.full_name 
+    FROM team_members tm
+    INNER JOIN entity_time et
+    ON et.entity_id = tm.legal_entity_id
+    WHERE 
+    tm.full_name = '{full_name}'
+    AND
+    et.year = '{year}'
+"""
+data=execute_sql(sql = sql)
+data
+data = pd.DataFrame(data, columns=["coverage", "fullname"])
+data
+data["coverage"][0]
+
+
+
+
+
+
+
+
+
