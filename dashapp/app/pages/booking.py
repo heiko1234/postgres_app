@@ -83,8 +83,8 @@ table_card = content_card_size(
                             options=team_members_options
                             )
                         ),
-                    small_icon_card(id="add_button", icon="add", color="white"),
-                    small_icon_card(id="update_button", icon="update", color="white"),
+                    # small_icon_card(id="add_button", icon="add", color="white"),
+                    small_icon_card(id="update_project_budget_button", icon="update", color="white"),
                     ],
                     style={"display": "flex"}
                 ),
@@ -120,7 +120,7 @@ monthly_working = content_card_size(
         html.H3(""),
         html.Div(
             children=[
-                html.Div(id="monthly_working")
+                html.Div(id="monthly_working_div")
             ]
         )
     ]
@@ -219,28 +219,98 @@ def overview_table(overview_year, overview_teammember):
 
 @dash.callback(
 
-    Output("monthly_working", "children"),
+    Output("monthly_working_div", "children"),
     [
         Input("overview_year", "value"),
-        Input("add_button", "n_clicks"),
-        Input("update_button", "n_clicks"),
+        Input("overview_teammember", "value"),
     ]
-    # ,prevent_initial_call=True
-    # , suppress_callback_exceptions=True
+    , prevent_initial_call=True
+    , suppress_callback_exceptions=True
 )
-def update_project_budget_table(budget_year, add_button, update_button):
+def update_project_budget_table(
+    overview_year, 
+    overview_teammember):
 
-    monthly_data = [None,None, None, None, None, None, None, None, None, None, None, None]
-
-    year_data = [budget_year]
-
-    all_data = year_data + monthly_data
+    sleep(0.3)
 
 
-    data = pd.DataFrame(data=[all_data], columns = ["Year", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"])
+    sql=f"""
+        SELECT p.project_id, p.topic, tc.topic_class, fs.founding_source, p.project_description
+        FROM project p
+        INNER JOIN founding_sources fs
+        ON p.funding_id = fs.founding_source_id
+        INNER JOIN topic_class tc
+        ON p.topic_class_id = tc.topic_class_id
+        INNER JOIN project_team_members ptm
+        ON p.project_id = ptm.project_id
+        INNER JOIN team_members tm
+        ON tm.team_id = ptm.team_id
+        INNER JOIN project_budget_planning pbp
+        ON pbp.project_id = p.project_id
+        WHERE pbp.year = '{overview_year}'
+        AND
+        tm.team_id in (SELECT team_id FROM team_members WHERE full_name = '{overview_teammember}')
+    """
+    data=execute_sql(sql)
+    data = pd.DataFrame(data, columns=["project_id", "topic", "topic_class", "founding_source", "project_descrition"])
 
 
-    data = data.sort_values(by="Year")
+    list_ids = list(set(data["project_id"]))
+
+
+    sql = f"""
+        SELECT project_id, month, working_hours FROM project_time_budget
+        WHERE team_id in (SELECT team_id FROM team_members WHERE full_name = '{overview_teammember}')
+        AND year = '{overview_year}';
+    """
+
+    data=execute_sql(sql = sql)
+
+    data = pd.DataFrame(data, columns=["project_id", "month", "working_days"])
+
+    try:
+        list_ids_available = list(set(data["project_id"]))
+    except BaseException:
+        list_ids_available = []
+
+
+    ids = [element for element in list_ids if element not in list_ids_available]
+
+    data=data.pivot(index="project_id", columns="month", values="working_days")
+    data = data.reset_index(drop = False)
+    data = data.reset_index(drop = True)
+    pda = data
+
+    months = [1,2,3,4,5,6,7,8,9,10,11,12]
+    all_zero = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+
+    data = pd.DataFrame()
+
+    if len(data) == 0:
+        for id in ids:
+            new_data = pd.DataFrame()
+            new_data["month"] = months
+            new_data["working_days"] = all_zero
+            new_data["project_id"] = id
+            data = pd.concat([data, new_data], axis=0)
+
+    if len(data) != 0:
+        data=data.pivot(index="project_id", columns="month", values="working_days")
+        data = data.reset_index(drop = False)
+        data = data.reset_index(drop = True)
+        pdata = data
+        pdata
+    else:
+        pdata = None
+
+    new_df = pd.concat([pda, pdata], axis=0)
+    new_df = new_df.reset_index(drop = True)
+
+
+    data = new_df
+
+
+    data = data.sort_values(by="project_id")
 
     df_budget_table = dash_table.DataTable(
         id = "project_monthly_budget_table",
@@ -260,6 +330,65 @@ def update_project_budget_table(budget_year, add_button, update_button):
 
     return df_budget_table
 
+
+
+@dash.callback(
+
+    Output("update_project_budget_button", "style"),
+    [
+        Input("update_project_budget_button", "n_clicks"),
+        State("overview_year", "value"),
+        State("overview_teammember", "value"),
+        State("project_monthly_budget_table", "data")
+    ]
+    , prevent_initial_call=True
+    , suppress_callback_exceptions=True
+)
+def update_project_budget_table( 
+    update_button, 
+    overview_year, 
+    overview_teammember,
+    data):
+
+    rawdata =pd.DataFrame(data, columns=["project_id", "1","2","3","4","5","6","7","8","9","10","11","12"])
+
+    sql = f"""
+        DELETE from project_time_budget
+        WHERE
+        team_id in (SELECT team_id FROM team_members WHERE full_name = '{overview_teammember}')
+        AND
+        year = '{overview_year}';
+    """
+    odata=execute_sql(sql = sql)
+    odata
+
+    months = [1,2,3,4,5,6,7,8,9,10,11,12]
+
+    for project_id in list(rawdata["project_id"]):
+
+        selected_data = rawdata.loc[rawdata["project_id"]==project_id]
+        selected_data = selected_data.reset_index(drop = True)
+        working_days = list(selected_data.loc[0, ["1","2","3","4","5","6","7","8","9","10","11","12"]])
+
+        for i in list(range(len(months))):
+
+            sql = f"""
+                INSERT INTO project_time_budget (year, month, working_hours, team_id, project_id) VALUES
+                (
+                    '{overview_year}',
+                    '{months[i]}',
+                    '{working_days[i]}',
+                    (SELECT team_id FROM team_members WHERE full_name = '{overview_teammember}'),
+                    '{project_id}'
+                );
+            """
+            output=execute_sql(sql = sql)
+            output
+
+
+    color = {"background-color": "white"}
+
+    return color
 
 
 

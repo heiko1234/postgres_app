@@ -107,12 +107,40 @@ data
 # """
 
 
-team_id = 1
+overview_teammember = "Heiko Kulinna"
+overview_year =2022
+
+sql=f"""
+    SELECT p.project_id, p.topic, tc.topic_class, fs.founding_source, p.project_description
+    FROM project p
+    INNER JOIN founding_sources fs
+    ON p.funding_id = fs.founding_source_id
+    INNER JOIN topic_class tc
+    ON p.topic_class_id = tc.topic_class_id
+    INNER JOIN project_team_members ptm
+    ON p.project_id = ptm.project_id
+    INNER JOIN team_members tm
+    ON tm.team_id = ptm.team_id
+    INNER JOIN project_budget_planning pbp
+    ON pbp.project_id = p.project_id
+    WHERE pbp.year = '{overview_year}'
+    AND
+    tm.team_id in (SELECT team_id FROM team_members WHERE full_name = '{overview_teammember}')
+"""
+data=execute_sql(sql)
+data
+data = pd.DataFrame(data, columns=["project_id", "topic", "topic_class", "founding_source", "project_descrition"])
+
+list_ids = list(set(data["project_id"]))
+list_ids
+
+
+
 
 fullname = "Heiko Kulinna"
 year =2022
 sql = f"""
-    SELECT project_id, month, working_hours from project_time_budget
+    SELECT project_id, month, working_hours FROM project_time_budget
     WHERE team_id in (SELECT team_id FROM team_members WHERE full_name = '{fullname}')
     AND year = '{year}';
 """
@@ -120,9 +148,32 @@ sql = f"""
 data=execute_sql(sql = sql)
 data
 
-months = [1,2,3,4,5,6,7,8,9,10,11,12]
-ids = [1, 2]
 
+data = pd.DataFrame(data, columns=["project_id", "month", "working_days"])
+data
+
+
+
+data=data.pivot(index="project_id", columns="month", values="working_days")
+data
+data = data.reset_index(drop = False)
+data = data.reset_index(drop = True)
+pda = data
+pda
+
+
+
+try:
+    list_ids_available = list(set(data["project_id"]))
+except BaseException:
+    list_ids_available = []
+
+
+ids = [element for element in list_ids if element not in list_ids_available]
+ids
+
+
+months = [1,2,3,4,5,6,7,8,9,10,11,12]
 all_zero = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
 data = pd.DataFrame()
@@ -137,37 +188,78 @@ if len(data) == 0:
 
 data
 data=data.pivot(index="project_id", columns="month", values="working_days")
+data
 data = data.reset_index(drop = False)
+data = data.reset_index(drop = True)
+pdata = data
+pdata
+
+
+
+new_df = pd.concat([pda, pdata], axis=0)
+new_df = new_df.reset_index(drop = True)
+new_df
+
+
 data
 
-data = None
+# pdata = data.pivot(index = "project_id", columns="month", values= "working_hours")
+# pdata = pdata.reset_index(drop = False)
+# pdata
 
-data = pd.DataFrame(data, columns = ["id", "month", "working_days"])
-data
-data.pivot(index="id", columns="month", values="working_days")
+pdata[5] = 20
+pdata
 
+
+
+pdata = new_df
 
 fullname = "Heiko Kulinna"
-project_id = 1
 year = 2022
+
+
+
 months = [1,2,3,4,5,6,7,8,9,10,11,12]
-working_days = [10, 15, 16, 17, 18, 19, 20, 9, 8, 10, 12, 19]
 
 
-for i in range(len(months)):
 
-    sql = f"""
-        INSERT INTO project_time_budget (year, month, working_hours, team_id, project_id) VALUES
-        (
-            '{year}',
-            '{months[i]}',
-            '{working_days[i]}',
-            (SELECT team_id FROM team_members WHERE full_name = '{fullname}'),
-            '{project_id}'
-        )
-    """
-    data=execute_sql(sql = sql)
-data
+for project_id in list(pdata["project_id"]):
+    print(project_id)
+    # project_id = 1
+    selected_data = pdata.loc[pdata["project_id"]==project_id]
+    selected_data = selected_data.reset_index(drop = True)
+    working_days = list(selected_data.loc[0, [1,2,3,4,5,6,7,8,9,10,11,12]])
+
+    for i in list(range(len(months))):
+
+        sql = f"""
+            INSERT INTO project_time_budget (year, month, working_hours, team_id, project_id) VALUES
+            (
+                '{year}',
+                '{months[i]}',
+                '{working_days[i]}',
+                (SELECT team_id FROM team_members WHERE full_name = '{fullname}'),
+                '{project_id}'
+            );
+        """
+        output=execute_sql(sql = sql)
+        output
+
+
+
+# except BaseException:
+#     sql = f"""
+#         UPDATE project_time_budget 
+#         SET
+#         year = '{year}', 
+#         month = '{months[i]}', 
+#         working_hours = '{working_days[i]}',
+#         team_id = (SELECT team_id FROM team_members WHERE full_name = '{fullname}'), 
+#         project_id = '{project_id}';
+#     """
+#     output=execute_sql(sql = sql)
+
+
 
 
 # DELETE from team_info 
@@ -186,6 +278,6 @@ sql = f"""
     year = '{year}';
 """
 data=execute_sql(sql = sql)
-
+data
 
 
