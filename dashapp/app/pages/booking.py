@@ -143,7 +143,7 @@ monthly_budget = content_card_size(
         html.H3(""),
         html.Div(
             children=[
-                html.Div(id="monthly_budget")
+                html.Div(id="monthly_budget_div")
             ]
         )
     ]
@@ -227,7 +227,7 @@ def overview_table(overview_year, overview_teammember):
     , prevent_initial_call=True
     , suppress_callback_exceptions=True
 )
-def update_project_budget_table(
+def update_project_work_table(
     overview_year, 
     overview_teammember):
 
@@ -259,7 +259,7 @@ def update_project_budget_table(
 
 
     sql = f"""
-        SELECT project_id, month, working_hours FROM project_time_budget
+        SELECT project_id, month, working_days FROM project_time_budget
         WHERE team_id in (SELECT team_id FROM team_members WHERE full_name = '{overview_teammember}')
         AND year = '{overview_year}';
     """
@@ -313,6 +313,57 @@ def update_project_budget_table(
     data = data.sort_values(by="project_id")
 
     df_budget_table = dash_table.DataTable(
+        id = "project_monthly_work_table",
+        columns=[{"name": str(i), "id": str(i)} for i in data.columns],
+        data=data.to_dict("records"),
+        style_table={"height": "100px", "overflow": "auto", "width": "850px"},
+        style_as_list_view=False,  #True
+        editable=True,
+        style_header={"fontweight": "bold", "font-family": "sans-serif"},
+        style_cell={
+            "font-family": "sans-serif", 
+            'overflow': 'hidden',
+            "minWidth": 60
+            },
+        row_selectable=False,
+    )
+
+    return df_budget_table
+
+
+@dash.callback(
+
+    Output("monthly_budget_div", "children"),
+    [
+        Input("overview_year", "value"),
+        Input("overview_teammember", "value"),
+        Input("update_project_budget_button", "n_clicks"),
+    ]
+    , prevent_initial_call=True
+    , suppress_callback_exceptions=True
+)
+def update_project_budget_table(
+    overview_year, 
+    overview_teammember,
+    update_clicks):
+
+    sleep(0.9)
+
+    sql = f"""
+        SELECT project_id, month, working_days, working_booking FROM project_time_budget
+        WHERE team_id in (SELECT team_id FROM team_members WHERE full_name = '{overview_teammember}')
+        AND year = '{overview_year}';
+    """
+
+    data=execute_sql(sql = sql)
+    data = pd.DataFrame(data, columns=["project_id", "month", "working_days", "working_booking"])
+    data = data.pivot(index="project_id", columns="month", values="working_booking")
+    data = data.reset_index(drop = False)
+    data = data.reset_index(drop = True)
+
+    data = data.sort_values(by="project_id")
+
+    df_budget_table = dash_table.DataTable(
         id = "project_monthly_budget_table",
         columns=[{"name": str(i), "id": str(i)} for i in data.columns],
         data=data.to_dict("records"),
@@ -339,7 +390,7 @@ def update_project_budget_table(
         Input("update_project_budget_button", "n_clicks"),
         State("overview_year", "value"),
         State("overview_teammember", "value"),
-        State("project_monthly_budget_table", "data")
+        State("project_monthly_work_table", "data")
     ]
     , prevent_initial_call=True
     , suppress_callback_exceptions=True
@@ -350,6 +401,7 @@ def update_project_budget_table(
     overview_teammember,
     data):
 
+    # load raw data from interactive data table
     rawdata =pd.DataFrame(data, columns=["project_id", "1","2","3","4","5","6","7","8","9","10","11","12"])
 
     sql = f"""
@@ -362,6 +414,7 @@ def update_project_budget_table(
     odata=execute_sql(sql = sql)
     odata
 
+
     months = [1,2,3,4,5,6,7,8,9,10,11,12]
 
     for project_id in list(rawdata["project_id"]):
@@ -373,7 +426,7 @@ def update_project_budget_table(
         for i in list(range(len(months))):
 
             sql = f"""
-                INSERT INTO project_time_budget (year, month, working_hours, team_id, project_id) VALUES
+                INSERT INTO project_time_budget (year, month, working_days, team_id, project_id) VALUES
                 (
                     '{overview_year}',
                     '{months[i]}',
@@ -384,6 +437,45 @@ def update_project_budget_table(
             """
             output=execute_sql(sql = sql)
             output
+
+
+    # caclulate booking from working days
+    sql = f"""
+        SELECT ptb.project_id, ptb.team_id, ptb.year, ptb.month, ptb.working_days, ROUND(ptb.working_days*et.coverage/240,2)
+        FROM project_time_budget ptb
+        INNER JOIN team_members tm
+        ON tm.team_id = ptb.team_id
+        INNER JOIN entity_time et
+        ON et.entity_id = tm.legal_entity_id
+        WHERE ptb.team_id in (SELECT team_id FROM team_members WHERE full_name = '{overview_teammember}')
+        AND ((ptb.year = '{overview_year}') AND (et.year = '{overview_year}'));
+    """
+    data=execute_sql(sql = sql)
+
+    data = pd.DataFrame(data, columns=["project_id", "team_id", "year", "month", "working_days", "working_bookings"])
+
+    data = data.pivot(index="project_id", columns="month", values="working_bookings")
+
+
+    # for loop to update
+    for project_id in list(data.index):
+        for month in list(data.columns):
+            money = data.loc[project_id, month]
+            sql = f"""
+                UPDATE project_time_budget
+                SET 
+                working_booking = '{money}'
+                WHERE 
+                project_id = '{project_id}' 
+                AND year = '{overview_year}'
+                AND month = '{month}'
+                AND team_id in (SELECT team_id FROM team_members WHERE full_name = '{overview_teammember}');
+            """
+            # try:
+            execute_sql(sql)
+            # except BaseException:
+            #     continue
+
 
 
     color = {"background-color": "white"}

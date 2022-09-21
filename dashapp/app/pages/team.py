@@ -174,7 +174,7 @@ layout = html.Div(
         State("i_mail", "value"),
         State("i_entity", "value"),
     ]
-    ,prevent_initial_call=True
+    # ,prevent_initial_call=True
 )
 def new_entity(n_clicks, name, surename, id, mail, entity):
 

@@ -8,7 +8,7 @@ import psycopg2
 def execute_sql(sql):
     #establishing the connection
     conn = psycopg2.connect(
-        database="team", user='postgres', password='postgres', host='127.30.0.1', port= '5432'
+        database="teams", user='postgres', password='postgres', host='127.30.0.1', port= '5432'
     )
     conn.autocommit = True
 
@@ -198,7 +198,7 @@ for project_id in list(new_df["project_id"]):
 
 
 sql = f"""
-    SELECT project_id, month, working_hours FROM project_time_budget
+    SELECT project_id, month, working_days FROM project_time_budget
     WHERE team_id in (SELECT team_id FROM team_members WHERE full_name = '{overview_teammember}')
     AND year = '{overview_year}';
 """
@@ -211,12 +211,12 @@ data = pd.DataFrame(data, columns=["project_id", "month", "working_days"])
 data
 
 
-data = data.pivot(index="project_id", columns="month", values="working_days")
-data
+# data = data.pivot(index="project_id", columns="month", values="working_days")
+# data
 
-data = data/20 * 170/12
-data = round(data,1)
-data
+# data = data/20 * 170/12
+# data = round(data,1)
+# data
 
 
 
@@ -243,8 +243,97 @@ data["coverage"][0]
 
 
 
+overview_teammember = "Heiko Kulinna"
+overview_year = 2022
+
+sql = f"""
+    SELECT ptb.project_id, ptb.month, ptb.working_days, ROUND(ptb.working_days*et.coverage/240,2)
+    FROM project_time_budget ptb
+    INNER JOIN team_members tm
+    ON tm.team_id = ptb.team_id
+    INNER JOIN entity_time et
+    ON et.entity_id = tm.legal_entity_id
+    WHERE ptb.team_id in (SELECT team_id FROM team_members WHERE full_name = '{overview_teammember}')
+    AND ptb.year = '{overview_year}';
+"""
+data=execute_sql(sql = sql)
+data
+data = pd.DataFrame(data, columns=["project_id", "month", "working_days", "working_bookings"])
+data
+
+data = data.pivot(index="project_id", columns="month", values="working_bookings")
+data
+list(data.index)
 
 
 
+# caclulate booking from working days
+# caclulate booking from working days
+sql = f"""
+    SELECT ptb.project_id, ptb.team_id, ptb.year, ptb.month, ptb.working_days, ROUND(ptb.working_days*et.coverage/240,2)
+    FROM project_time_budget ptb
+    INNER JOIN team_members tm
+    ON tm.team_id = ptb.team_id
+    INNER JOIN entity_time et
+    ON et.entity_id = tm.legal_entity_id
+    WHERE ptb.team_id in (SELECT team_id FROM team_members WHERE full_name = '{overview_teammember}')
+    AND ((ptb.year = '{overview_year}') AND (et.year = '{overview_year}'));
+"""
+data=execute_sql(sql = sql)
+print("fetched data")
+data = pd.DataFrame(data, columns=["project_id", "year", "month", "working_days", "working_bookings"])
+data = data.pivot(index="project_id", columns="month", values="working_bookings")
+print(data)
+
+
+
+
+
+
+
+
+overview_teammember = "Heiko Kulinna"
+overview_year =2022
+
+
+
+for project_id in list(data.index):
+    for month in list(data.columns):
+        money = data.loc[project_id, month]
+        sql = f"""
+            UPDATE project_time_budget
+            SET 
+            working_booking = '{money}'
+            WHERE 
+            project_id = '{project_id}' 
+            AND year = '{overview_year}'
+            AND month = '{month}'
+            AND team_id in (SELECT team_id FROM team_members WHERE full_name = '{overview_teammember}');
+        """
+        execute_sql(sql)
+
+
+
+
+
+
+overview_teammember = "Ralf Kulinna"
+overview_year =2022
+
+
+sql = f"""
+    SELECT project_id, month, working_days, working_booking FROM project_time_budget
+    WHERE team_id in (SELECT team_id FROM team_members WHERE full_name = '{overview_teammember}')
+    AND year = '{overview_year}';
+"""
+
+data=execute_sql(sql = sql)
+data
+data = pd.DataFrame(data, columns=["project_id", "month", "working_days", "working_booking"])
+data
+
+
+data = data.pivot(index="project_id", columns="month", values="working_booking")
+data
 
 

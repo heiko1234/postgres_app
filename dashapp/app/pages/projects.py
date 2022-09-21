@@ -1,8 +1,9 @@
 import dash
-import datetime
+
 
 import pandas as pd
 from time import sleep
+from datetime import datetime
 from dash import html, dcc
 from dash import dash_table
 from dash.dependencies import Input, Output, State
@@ -84,7 +85,7 @@ project_status=get_option_list(["Planned", "Approved", "Ongoing", "Completed", "
 
 
 # what is this year when loading
-this_year=datetime.datetime.today().year
+this_year=datetime.today().year
 
 
 
@@ -221,7 +222,7 @@ add_yearly_budget = content_card_size(
     content=[
         html.Div(
             children=[
-                mini_card("Year", a_function=dcc.Input(id="budget_year", type="number", min=2000, max=2100, step=1, value=this_year, style={"width": "130px"})),
+                mini_card("Year", a_function=dcc.Input(id="budget_year", type="number", step=1, value=this_year, style={"width": "130px"})),
                 mini_card("Budget", a_function=dcc.Input(id="yearly_budget", type="number", min=0, style={"width": "130px"})),
                 small_icon_card(id="add_budget_button", icon="add", color="white"),
                 small_icon_card(id="update_budget_button", icon="update", color="white"),
@@ -417,6 +418,28 @@ def load_project(project_id):
         funding = topic = topic_class = argus = charging = rec_account = account_resp = start = end = difficulty = status = description = target = None
 
     return funding, topic, topic_class, argus, charging, rec_account, account_resp, start, end, difficulty, status, description, target
+
+
+
+@dash.callback(
+    [
+        Output("budget_year", "min"),
+        Output("budget_year", "max")
+    ],
+    [
+        Input("new_start", "date"),
+        Input("new_end", "date")
+    ]
+    , prevent_initial_call=True
+    , suppress_callback_exceptions=True
+)
+def update_budget_year_limits(start_date, end_date):
+
+    year_low = datetime.strptime(start_date, "%Y-%m-%d")
+    year_high = datetime.strptime(end_date, "%Y-%m-%d")
+
+    return year_low.year, year_high.year
+
 
 
 
@@ -892,12 +915,12 @@ def delete_project_budget(delete_budget_button, project_id, budget_year):
         Input("update_budget_button", "n_clicks"),
         State("new_projectid", "value"),
         State("budget_year", "value"),
-        State("yearly_budget", "value")
+        State("yearly_budget", "value"),
     ]
     , prevent_initial_call=True
     , suppress_callback_exceptions=True
 )
-def delete_project_budget(delete_budget_button, project_id, budget_year, yearly_budget):
+def update_project_budget(delete_budget_button, project_id, budget_year, yearly_budget, teammember):
 
     if ((project_id != None) and (budget_year != None)):
 
@@ -907,7 +930,8 @@ def delete_project_budget(delete_budget_button, project_id, budget_year, yearly_
             project_id = (SELECT project_id FROM project WHERE project_id = '{project_id}'),
             year = '{budget_year}',
             budget = '{yearly_budget}'
-            WHERE project_id = '{project_id}' AND year = '{budget_year}';
+            WHERE project_id = '{project_id}' 
+            AND year = '{budget_year}';
         """
         execute_sql(sql)
 

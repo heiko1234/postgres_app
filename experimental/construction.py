@@ -8,7 +8,7 @@ import psycopg2
 def execute_sql(sql):
     #establishing the connection
     conn = psycopg2.connect(
-        database="team", user='postgres', password='postgres', host='127.30.0.1', port= '5432'
+        database="teams", user='postgres', password='postgres', host='127.30.0.1', port= '5432'
     )
     conn.autocommit = True
 
@@ -155,7 +155,7 @@ execute_sql(sql)
 
 #establishing the connection
 conn = psycopg2.connect(
-    database="team", user='postgres', password='postgres', host='127.30.0.1', port= '5432'
+    database="teams", user='postgres', password='postgres', host='127.30.0.1', port= '5432'
 )
 
 conn.autocommit = True
@@ -178,19 +178,19 @@ values_list=[
 cursor.executemany(sql_statement, values_list)
 
 
-sql= "SELECT founding_source FROM founding_sources"
-execute_sql(sql)
+# sql= "SELECT founding_source FROM founding_sources"
+# execute_sql(sql)
 
-sql= "SELECT founding_source_id FROM founding_sources"
-execute_sql(sql)
+# sql= "SELECT founding_source_id FROM founding_sources"
+# execute_sql(sql)
 
-value = "ED"
-sql = f"SELECT founding_source_id FROM founding_sources WHERE founding_source = '{value}';"
-execute_sql(sql)[0][0]
+# value = "ED"
+# sql = f"SELECT founding_source_id FROM founding_sources WHERE founding_source = '{value}';"
+# execute_sql(sql)[0][0]
 
 
-sql= "SELECT * FROM founding_sources"
-execute_sql(sql)
+# sql= "SELECT * FROM founding_sources"
+# execute_sql(sql)
 
 
 
@@ -212,11 +212,11 @@ cursor.executemany(sql_statement, values_list)
 cursor.close()
 conn.close()
 
-sql= "SELECT topic_class FROM topic_class"
-execute_sql(sql)
+# sql= "SELECT topic_class FROM topic_class"
+# execute_sql(sql)
 
-sql= "SELECT * FROM topic_class"
-execute_sql(sql)
+# sql= "SELECT * FROM topic_class"
+# execute_sql(sql)
 
 
 
@@ -251,6 +251,10 @@ sql = """
 #             FOREIGN KEY (project_od)
 #                 REFERENCES ods (od_id)
 #                 ON UPDATE CASCADE ON DELETE CASCADE,
+
+
+# sql = "DROP TABLE project"
+# execute_sql(sql)
 
 execute_sql(sql)
 
@@ -317,8 +321,8 @@ sql = """
         FOREIGN KEY (team_id)
             REFERENCES team_members (team_id)
             ON UPDATE CASCADE ON DELETE CASCADE,
-        working_hours integer,
-        working_booking integer,
+        working_days integer,
+        working_booking float,
         project_id integer NOT NULL,
         FOREIGN KEY (project_id) 
             REFERENCES project (project_id) 
@@ -328,5 +332,7 @@ sql = """
 """
 execute_sql(sql)
 
+# sql = "DROP TABLE project_time_budget"
+# execute_sql(sql)
 
 
