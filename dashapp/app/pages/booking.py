@@ -441,7 +441,7 @@ def update_project_budget_table(
 
     # caclulate booking from working days
     sql = f"""
-        SELECT ptb.project_id, ptb.team_id, ptb.year, ptb.month, ptb.working_days, ROUND(ptb.working_days*et.coverage/240,2)
+        SELECT ptb.project_id, ptb.team_id, ptb.year, ptb.month, ptb.working_days, ROUND(ptb.working_days*et.coverage/240::numeric,2)
         FROM project_time_budget ptb
         INNER JOIN team_members tm
         ON tm.team_id = ptb.team_id
@@ -453,6 +453,7 @@ def update_project_budget_table(
     data=execute_sql(sql = sql)
 
     data = pd.DataFrame(data, columns=["project_id", "team_id", "year", "month", "working_days", "working_bookings"])
+    print(data)
 
     data = data.pivot(index="project_id", columns="month", values="working_bookings")
 
