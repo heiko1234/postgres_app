@@ -36,22 +36,22 @@ dash.register_page(__name__,)
 
 
 # project_id from projects
-sql= "SELECT project_id FROM project"
-data=execute_sql(sql)
+# sql= "SELECT project_id FROM project"
+# data=execute_sql(sql)
 
-data=pd.DataFrame(data, columns=["project_id"])
-list_data=list(data["project_id"])
-list_data.sort()
-project_options = get_option_list(list_data)
+# data=pd.DataFrame(data, columns=["project_id"])
+# list_data=list(data["project_id"])
+# list_data.sort()
+# project_options = get_option_list(list_data)
 
 
 # founding_sources
-sql= "SELECT founding_source FROM founding_sources"
-data = execute_sql(sql)
-data=pd.DataFrame(data, columns=["founding_source"])
-list_data=list(data["founding_source"])
-list_data.sort()
-founding_sources_options = get_option_list(list_data)
+# sql= "SELECT founding_source FROM founding_sources"
+# data = execute_sql(sql)
+# data=pd.DataFrame(data, columns=["founding_source"])
+# list_data=list(data["founding_source"])
+# list_data.sort()
+# founding_sources_options = get_option_list(list_data)
 
 
 # topic_class: topics
@@ -98,8 +98,12 @@ aproject_card = content_card_size(
     content=[
         html.Div(
             children=[
-                mini_card("Project_ID", a_function=dcc.Dropdown(id="new_projectid", options=project_options, style={"width": "130px"})),
-                mini_card("Funding", a_function=dcc.Dropdown(id="new_funding", options=founding_sources_options, style={"width": "130px"})),
+                mini_card("Project_ID", a_function=dcc.Dropdown(id="new_projectid", 
+                    #options=project_options, 
+                    style={"width": "130px"})),
+                mini_card("Funding", a_function=dcc.Dropdown(id="new_funding", 
+                    #options=founding_sources_options, 
+                    style={"width": "130px"})),
                 mini_card("Topic", a_function=dcc.Input(id="new_topic", type="text", placeholder="", style={"width": "130px"})),
                 mini_card("Topic Class", a_function=dcc.Dropdown(id="new_topic_class", options=topic_class_options, style={"width": "130px"})),
                 mini_card("Argus enabled", a_function=dcc.Dropdown(id="new_argus", value="Yes", options=[{"label": "Yes", "value": "Yes"}, {"label": "No", "value": "No"}], style={"width": "130px"})),
@@ -207,6 +211,7 @@ assign_project = content_card_size(
     ]
 )
 
+
 add_deadline = content_card_size(
     id="deadline_project_content",
     title="Add a deadline",
@@ -303,6 +308,7 @@ table_card = content_card_size(
     ]
 )
 
+
 callback_timer = dcc.Interval(id ="update_timer",  interval = 4*1000)  #1000 ms * 4 = 4sec
 
 
@@ -338,28 +344,97 @@ layout = html.Div(
 
 # make the callbacks
 
-
-# add project
+# founding sources option list
 @dash.callback(
-    Output("projects_add_project_button", "style"),
+    Output("new_funding", "options"),
     [
         Input("projects_add_project", "n_clicks"),
         Input("update_timer", "n_intervals"),
-        State("projects_add_project_button", "style")
     ]
-    , prevent_initial_call=True
-    , suppress_callback_exceptions=True
+)
+def update_founding(n_clicks, n_intervals):
+    sql= "SELECT founding_source FROM founding_sources"
+    data = execute_sql(sql)
+    data=pd.DataFrame(data, columns=["founding_source"])
+    list_data=list(data["founding_source"])
+    list_data.sort()
+    founding_sources_options = get_option_list(list_data)
+
+    return founding_sources_options
+
+
+# add project
+@dash.callback(
+    [
+    Output("projects_add_project_button", "style"),
+    Output("new_projectid", "options"),
+    ],
+    [
+        Input("projects_add_project", "n_clicks"),
+        Input("update_timer", "n_intervals"),
+        State("projects_add_project_button", "style"),
+        State("new_funding", "value"),
+        State("new_topic", "value"),
+        State("new_topic_class", "value"),
+        State("new_argus", "value"),
+        State("new_charging", "value"),
+        State("rec_account", "value"),
+        State("new_account_responsible", "value"),
+        State("new_start", "date"),
+        State("new_end", "date"),
+        State("new_project_diff", "value"),
+        State("new_project_status", "value"),
+        State("new_text", "value"),
+        State("new_target", "value")
+    ]
+    # , prevent_initial_call=True
+    # , suppress_callback_exceptions=True
 )
 def projects_add_project(
     n_clicks, 
     n_interval, 
-    style
+    style,
+    funding,
+    topic,
+    topic_class,
+    argus,
+    charging,
+    rec_account,
+    account_resp,
+    start,
+    end,
+    difficulty,
+    status,
+    description,
+    target
     ):
 
     button_id = ctx.triggered_id
 
 
     if ((button_id == "projects_add_project") and (style['background-color'] == "white") and (style != None)):
+
+        sql = f"""
+            INSERT INTO project (funding_id, topic, topic_class_id, argus_enabled, way_charging, recieving_account, cost_center_respon, start_date, end_date, difficulty, project_status, project_description, project_goals) VALUES 
+            (
+                (SELECT founding_source_id FROM founding_sources WHERE founding_source = '{funding}'),
+                '{topic}',
+                (SELECT topic_class_id FROM topic_class WHERE topic_class = '{topic_class}'),
+                '{argus}',
+                '{charging}',
+                '{rec_account}',
+                '{account_resp}',
+                '{start}',
+                '{end}',
+                '{difficulty}',
+                '{status}',
+                '{description}',
+                '{target}'
+            );
+        """
+
+        data = execute_sql(sql)
+
         color = {"background-color": "green",
             "height": "70px", 
             "width": "70px"}
@@ -374,8 +449,108 @@ def projects_add_project(
             "height": "70px", 
             "width": "70px"}
 
-    return color
+    sql= "SELECT project_id FROM project"
+    data=execute_sql(sql)
 
+    data=pd.DataFrame(data, columns=["project_id"])
+    list_data=list(data["project_id"])
+    list_data.sort()
+    project_options = get_option_list(list_data)
+
+    # new_index = list(data["project_id"])[-1]
+
+    return color, project_options
+
+
+# give values when project id is selected
+@dash.callback(
+    [
+        Output("new_funding", "value"),
+        Output("new_topic", "value"),
+        Output("new_topic_class", "value"),
+        Output("new_argus", "value"),
+        Output("new_charging", "value"),
+        Output("rec_account", "value"),
+        Output("new_account_responsible", "value"),
+        Output("new_start", "date"),
+        Output("new_end", "date"),
+        Output("new_project_diff", "value"),
+        Output("new_project_status", "value"),
+        Output("new_text", "value"),
+        Output("new_target", "value")
+    ],
+    [
+        Input("new_projectid", "value"),
+    ]
+    , prevent_initial_call=True
+    , suppress_callback_exceptions=True
+)
+def load_project(project_id):
+
+    if project_id != None:
+
+        sql = f"""
+            SELECT fs.founding_source, p.topic, tc.topic_class, p.argus_enabled, p.way_charging, p.recieving_account, p.cost_center_respon, p.start_date, p.end_date, p.difficulty, p.project_status, p.project_description, p.project_goals
+            FROM project p
+            INNER JOIN topic_class tc
+            ON p.topic_class_id = tc.topic_class_id
+            INNER JOIN founding_sources fs
+            ON p.funding_id = fs.founding_source_id
+            WHERE p.project_id = '{project_id}';
+        """
+
+        data = execute_sql(sql)
+
+        data = pd.DataFrame(data, columns=["funding", "topic", "topic_class", "argus", "charging", "rec_account", "account_resp", "start", "end", "difficulty", "status", "description", "target"])
+
+        funding = data.loc[0, "funding"]
+        topic = data.loc[0, "topic"]
+        topic_class = data.loc[0, "topic_class"]
+        argus = data.loc[0, "argus"]
+        charging = data.loc[0, "charging"]
+        rec_account = data.loc[0, "rec_account"]
+        account_resp = data.loc[0, "account_resp"]
+        start = data.loc[0, "start"]
+        end = data.loc[0, "end"]
+        difficulty = data.loc[0, "difficulty"]
+        status = data.loc[0, "status"]
+        description = data.loc[0, "description"]
+        target = data.loc[0, "target"]
+    
+    else:
+        funding = topic = topic_class = argus = charging = rec_account = account_resp = start = end = difficulty = status = description = target = None
+
+    return funding, topic, topic_class, argus, charging, rec_account, account_resp, start, end, difficulty, status, description, target
+
+
+# update_budget_year_limits
+@dash.callback(
+    [
+        Output("budget_year", "min"),
+        Output("budget_year", "max")
+    ],
+    [
+        Input("new_start", "date"),
+        Input("new_end", "date")
+    ]
+    , prevent_initial_call=True
+    , suppress_callback_exceptions=True
+)
+def update_budget_year_limits(start_date, end_date):
+
+    if ((start_date != None) and (end_date != None)):
+
+        year_low = datetime.strptime(start_date, "%Y-%m-%d")
+        year_high = datetime.strptime(end_date, "%Y-%m-%d")
+
+        year_low=year_low.year
+        year_high =year_high.year
+
+    else:
+        year_low = None
+        year_high = None
+
+    return year_low, year_high
 
 
 # update project
@@ -384,7 +559,21 @@ def projects_add_project(
     [
         Input("projects_update_project", "n_clicks"),
         Input("update_timer", "n_intervals"),
-        State("projects_update_project_button", "style")
+        State("projects_update_project_button", "style"),
+        State("new_projectid", "value"),
+        State("new_funding", "value"),
+        State("new_topic", "value"),
+        State("new_topic_class", "value"),
+        State("new_argus", "value"),
+        State("new_charging", "value"),
+        State("rec_account", "value"),
+        State("new_account_responsible", "value"),
+        State("new_start", "date"),
+        State("new_end", "date"),
+        State("new_project_diff", "value"),
+        State("new_project_status", "value"),
+        State("new_text", "value"),
+        State("new_target", "value")
     ]
     , prevent_initial_call=True
     , suppress_callback_exceptions=True
@@ -392,7 +581,21 @@ def projects_add_project(
 def projects_update_project(
     n_clicks, 
     n_interval, 
-    style
+    style,
+    project_id,
+    funding,
+    topic,
+    topic_class,
+    argus,
+    charging,
+    rec_account,
+    account_resp,
+    start,
+    end,
+    difficulty,
+    status,
+    description,
+    target
     ):
 
     button_id = ctx.triggered_id
@@ -405,6 +608,28 @@ def projects_update_project(
             "width": "70px"}
 
     elif (button_id == "projects_update_project"):
+
+        sql = f"""
+            UPDATE project
+            SET
+            funding_id = (SELECT founding_source_id FROM founding_sources WHERE founding_source = '{funding}'),
+            topic = '{topic}',
+            topic_class_id = (SELECT topic_class_id FROM topic_class WHERE topic_class = '{topic_class}'),
+            argus_enabled = '{argus}',
+            way_charging = '{charging}',
+            recieving_account = '{rec_account}',
+            cost_center_respon = '{account_resp}',
+            start_date = '{start}',
+            end_date = '{end}',
+            difficulty = '{difficulty}',
+            project_status = '{status}',
+            project_description = '{description}',
+            project_goals = '{target}'
+            WHERE project_id = '{project_id}';
+        """
+        data = execute_sql(sql)
+        data
+
         color = {"background-color": "green",
             "height": "70px", 
             "width": "70px"}
@@ -418,7 +643,6 @@ def projects_update_project(
 
 
 
-
 # small_icon_card(id="projects_assign_team_add_button", icon="add", color="white"),
 # Assign Team to project
 @dash.callback(
@@ -426,7 +650,9 @@ def projects_update_project(
     [
         Input("projects_assign_team_add_button", "n_clicks"),
         Input("update_timer", "n_intervals"),
-        State("projects_assign_team_add_button_button", "style")
+        State("projects_assign_team_add_button_button", "style"),
+        State("new_projectid", "value"),
+        State("single_teammember", "value"),
     ]
     , prevent_initial_call=True
     , suppress_callback_exceptions=True
@@ -434,7 +660,9 @@ def projects_update_project(
 def projects_assign_team_add(
     n_clicks, 
     n_interval, 
-    style
+    style,
+    project_id,
+    single_teammember
     ):
 
     button_id = ctx.triggered_id
@@ -445,9 +673,26 @@ def projects_assign_team_add(
             "width": "70px"}
 
     elif (button_id == "projects_assign_team_add_button"):
-        color = {"background-color": "green",
-            "height": "70px", 
-            "width": "70px"}
+
+        if ((project_id != None) and (single_teammember != None)):
+
+            sql = f"""
+                INSERT INTO project_team_members(project_id, team_id) VALUES
+                (
+                    (SELECT project_id FROM project WHERE project_id = '{project_id}'),
+                    (SELECT team_id FROM team_members WHERE full_name = '{single_teammember}')
+                )
+            """
+            execute_sql(sql)
+
+            color = {"background-color": "green",
+                "height": "70px", 
+                "width": "70px"}
+        
+        else: 
+            color = {"background-color": "white",
+                "height": "70px", 
+                "width": "70px"}
 
     else: 
         color = {"background-color": "white",
@@ -464,15 +709,19 @@ def projects_assign_team_add(
     [
         Input("projects_assign_team_delete_button", "n_clicks"),
         Input("update_timer", "n_intervals"),
-        State("projects_assign_team_delete_button_button", "style")
+        State("projects_assign_team_delete_button_button", "style"),
+        State("new_projectid", "value"),
+        State("single_teammember", "value"),
     ]
     , prevent_initial_call=True
     , suppress_callback_exceptions=True
 )
-def update_project_button_style(
+def projects_remove_team(
     n_clicks, 
     n_interval, 
-    style
+    style,
+    project_id,
+    teammember
     ):
 
     button_id = ctx.triggered_id
@@ -483,9 +732,21 @@ def update_project_button_style(
             "width": "70px"}
 
     elif (button_id == "projects_assign_team_delete_button"):
-        color = {"background-color": "green",
-            "height": "70px", 
-            "width": "70px"}
+
+        if ((project_id != None) and (teammember != None)):
+
+            sql = f"""
+                DELETE FROM project_team_members
+                WHERE
+                project_id in (SELECT project_id FROM project WHERE project_id = '{project_id}')
+                AND
+                team_id in (SELECT team_id FROM team_members WHERE full_name = '{teammember}');
+            """
+            execute_sql(sql)
+
+            color = {"background-color": "green",
+                "height": "70px", 
+                "width": "70px"}
 
     else: 
         color = {"background-color": "white",
@@ -495,8 +756,56 @@ def update_project_button_style(
     return color
 
 
+# show up teammember_table
+@dash.callback(
+    Output("table_assigned_team", "children"),
+    [
+        Input("projects_update_project", "n_clicks"),
+        Input("projects_assign_team_add_button", "n_clicks"),
+        Input("projects_assign_team_delete_button", "n_clicks"),
+        Input("new_projectid", "value"),
+    ]
+    , prevent_initial_call=True
+    , suppress_callback_exceptions=True
+)
+def update_project_teammember_table(update_button, add_button, delete_button, project_id):
 
+    if (project_id != None):
 
+        sleep(1)
+
+        sql = f"""
+            SELECT tm.full_name
+            FROM team_members tm
+            INNER JOIN project_team_members ptm
+            ON ptm.team_id = tm.team_id
+            INNER JOIN project p
+            ON p.project_id = ptm.project_id
+            WHERE p.project_id = '{project_id}'
+            """
+
+        data = execute_sql(sql)
+
+        data = pd.DataFrame(data, columns=["active PrAI Team members"])
+
+        df_team = dash_table.DataTable(
+            id = "table_teammembers",
+            columns=[{"name": str(i), "id": str(i)} for i in data.columns],
+            data=data.to_dict("records"),
+            style_table={"height": "200px", "overflow": "auto", "width": "300px"},
+            style_as_list_view=True,
+            style_header={"fontweight": "bold", "font-family": "sans-serif"},
+            style_cell={
+                "font-family": "sans-serif", 
+                'overflow': 'hidden',
+                "minWidth": 60
+                },
+            row_selectable=False,
+        )
+    else: 
+        df_team = None
+
+    return df_team
 
 
 
@@ -507,7 +816,10 @@ def update_project_button_style(
     [
         Input("projects_add_deadline_button", "n_clicks"),
         Input("update_timer", "n_intervals"),
-        State("projects_add_deadline_button_button", "style")
+        State("projects_add_deadline_button_button", "style"),
+        State("deadline_date", "date"),
+        State("deadline_topic", "value"),
+        State("new_projectid", "value"),
     ]
     , prevent_initial_call=True
     , suppress_callback_exceptions=True
@@ -515,7 +827,10 @@ def update_project_button_style(
 def projects_add_deadline(
     n_clicks, 
     n_interval, 
-    style
+    style,
+    deadline_date,
+    deadline_topic,
+    project_id
     ):
 
     button_id = ctx.triggered_id
@@ -526,9 +841,26 @@ def projects_add_deadline(
             "width": "70px"}
 
     elif (button_id == "projects_add_deadline_button"):
-        color = {"background-color": "green",
-            "height": "70px", 
-            "width": "70px"}
+
+        if ((deadline_date != None) and (deadline_topic != None) and (project_id != None)):
+
+            sql = f"""
+                INSERT INTO project_deadlines(project_id, deadline_date, deadline_text) VALUES
+                (
+                    (SELECT project_id FROM project WHERE project_id = '{project_id}'),
+                    '{deadline_date}',
+                    '{deadline_topic}'
+                );
+            """
+            data = execute_sql(sql)
+            data
+            color = {"background-color": "green",
+                "height": "70px", 
+                "width": "70px"}
+        else:
+            color = {"background-color": "white",
+                "height": "70px", 
+                "width": "70px"}
 
     else: 
         color = {"background-color": "white",
@@ -538,9 +870,6 @@ def projects_add_deadline(
     return color
 
 
-
-
-
 # small_icon_card(id="projects_delete_deadline_button", icon="delete", color="white"),
 # projects_remove_deadline
 @dash.callback(
@@ -548,7 +877,10 @@ def projects_add_deadline(
     [
         Input("projects_delete_deadline_button", "n_clicks"),
         Input("update_timer", "n_intervals"),
-        State("projects_delete_deadline_button_button", "style")
+        State("projects_delete_deadline_button_button", "style"),
+        State("deadline_date", "date"),
+        State("deadline_topic", "value"),
+        State("new_projectid", "value"),
     ]
     , prevent_initial_call=True
     , suppress_callback_exceptions=True
@@ -556,7 +888,10 @@ def projects_add_deadline(
 def projects_remove_deadline(
     n_clicks, 
     n_interval, 
-    style
+    style,
+    deadline_date,
+    deadline_topic,
+    project_id
     ):
 
     button_id = ctx.triggered_id
@@ -567,9 +902,28 @@ def projects_remove_deadline(
             "width": "70px"}
 
     elif (button_id == "projects_delete_deadline_button"):
-        color = {"background-color": "green",
-            "height": "70px", 
-            "width": "70px"}
+
+        if ((deadline_date != None) and (deadline_topic != None) and (project_id != None)):
+
+            sql = f"""
+                DELETE FROM project_deadlines
+                WHERE
+                project_id in (SELECT project_id FROM project WHERE project_id = '{project_id}')
+                AND
+                deadline_date = '{deadline_date}'
+                AND
+                deadline_text = '{deadline_topic}';
+            """
+            data = execute_sql(sql)
+            data
+
+            color = {"background-color": "green",
+                "height": "70px", 
+                "width": "70px"}
+        else:
+            color = {"background-color": "white",
+                "height": "70px", 
+                "width": "70px"}
 
     else: 
         color = {"background-color": "white",
@@ -577,6 +931,130 @@ def projects_remove_deadline(
             "width": "70px"}
 
     return color
+
+
+# update and create deadline tables
+@dash.callback(
+
+    Output("table_deadlines", "children"),
+    [
+        Input("new_projectid", "value"),
+        Input("projects_add_deadline_button", "n_clicks"),
+        Input("projects_delete_deadline_button", "n_clicks"),
+    ]
+    , prevent_initial_call=True
+    , suppress_callback_exceptions=True
+)
+def update_project_deadlines_table(project_id, deadline_button, delete_deadline_button):
+
+    if (project_id != None):
+
+        sleep(1)
+
+        sql = f"""
+            SELECT deadline_date, deadline_text FROM project_deadlines
+            WHERE project_id = {project_id}
+            """
+        data=execute_sql(sql)
+
+        data = pd.DataFrame(data, columns=["Date", "Topic"])
+
+        data = data.sort_values(by="Date")
+
+        df_deadline = dash_table.DataTable(
+            id = "deadlines_table",
+            columns=[{"name": str(i), "id": str(i)} for i in data.columns],
+            data=data.to_dict("records"),
+            style_table={"height": "200px", "overflow": "auto", "width": "400px"},
+            style_as_list_view=True,
+            style_header={"fontweight": "bold", "font-family": "sans-serif"},
+            style_cell={
+                "font-family": "sans-serif", 
+                'overflow': 'hidden',
+                "minWidth": 60
+                },
+            row_selectable="single",
+        )
+
+    else: 
+        df_deadline = None
+
+    return df_deadline
+
+
+# selectable deadline table for updates
+@dash.callback(
+    [
+        Output("deadline_date", "date"),
+        Output("deadline_topic", "value")
+    ],
+    [
+        Input("deadlines_table", "selected_rows"),
+        Input("deadlines_table", "data"),
+        State("new_projectid", "value"),
+    ]
+    , prevent_initial_call=True
+    , suppress_callback_exceptions=True
+)
+def select_deadline_table(selected_row, raw_data, projectid):
+
+    if ((projectid != None) and (raw_data != None) and (selected_row != None)):
+
+        data = pd.DataFrame(raw_data, columns=["Date", "Topic"])
+
+        date = list(set(data.loc[selected_row, "Date"]))[0]
+        topic = list(set(data.loc[selected_row, "Topic"]))[0]
+    else:
+        date = topic = None
+
+    return date, topic
+
+
+
+# project overview table at the end of the page
+@dash.callback(
+
+    Output("table_projects_overview", "children"),
+    [
+        Input("projects_update_project", "n_clicks"),
+        Input("projects_add_project", "n_clicks"),
+        Input("new_projectid", "value")
+    ]
+    , prevent_initial_call=True
+    , suppress_callback_exceptions=True
+)
+def update_project_table(update_project_button, add_project_button, project_id_value):
+
+    sql="""
+        SELECT p.project_id, p.topic, tc.topic_class, fs.founding_source, p.project_description
+        FROM project p
+        INNER JOIN founding_sources fs
+        ON p.funding_id = fs.founding_source_id
+        INNER JOIN topic_class tc
+        ON p.topic_class_id = tc.topic_class_id
+    """
+    data=execute_sql(sql)
+
+    data = pd.DataFrame(data, columns=["project_id", "Topic", "Topic_Class", "Founding Source", "Project Desc."])
+
+    data = data.sort_values(by="project_id")
+
+    df_projects = dash_table.DataTable(
+        id = "projects_table",
+        columns=[{"name": str(i), "id": str(i)} for i in data.columns],
+        data=data.to_dict("records"),
+        style_table={"height": "400px", "overflow": "auto", "width": "1300px"},
+        style_as_list_view=True,
+        style_header={"fontweight": "bold", "font-family": "sans-serif"},
+        style_cell={
+            "font-family": "sans-serif", 
+            'overflow': 'hidden',
+            "minWidth": 60
+            },
+        row_selectable="single",
+    )
+
+    return df_projects
 
 
 
@@ -695,6 +1173,63 @@ def projects_delete_budget(
 
     return color
 
+
+# TODO
+# @dash.callback(
+
+#     Output("table_yearly_budget", "children"),
+#     [
+#         Input("new_projectid", "value"),
+#         Input("add_budget_button", "n_clicks"),
+#         Input("update_budget_button", "n_clicks"),
+#         Input("delete_budget_button", "n_clicks")
+#     ]
+#     , prevent_initial_call=True
+#     , suppress_callback_exceptions=True
+# )
+# def update_project_budget_table(project_id, add_budget_button, update_budget_button, delete_budget_button):
+
+#     if project_id != None:
+
+#         sleep(0.1)
+
+#         sql=f"""
+#             SELECT pbp.year, pbp.budget
+#             FROM project_budget_planning pbp
+#             WHERE project_id = {project_id}
+#         """
+#         data=execute_sql(sql)
+
+#         data = pd.DataFrame(data, columns=["Year", "Budget"])
+
+#         data = data.sort_values(by="Year")
+
+#         df_budget_table = dash_table.DataTable(
+#             id = "project_budget_table",
+#             columns=[{"name": str(i), "id": str(i)} for i in data.columns],
+#             data=data.to_dict("records"),
+#             style_table={"height": "400px", "overflow": "auto", "width": "300px"},
+#             style_as_list_view=True,
+#             style_header={"fontweight": "bold", "font-family": "sans-serif"},
+#             style_cell={
+#                 "font-family": "sans-serif", 
+#                 'overflow': 'hidden',
+#                 "minWidth": 60
+#                 },
+#             row_selectable=False,
+#         )
+    
+#     else:
+#         df_budget_table = None
+
+#     return df_budget_table
+
+
+
+
+
+
+# TODO
 # small_icon_card(id="projects_add_team_budget_button", icon="add", color="white"),
 # budget to some project team members
 @dash.callback(
@@ -810,556 +1345,9 @@ def projects_delete_budget_to_team(
 
 
 
-# @dash.callback(
-#     [
-#         Output("new_projectid", "options"),
-#         Output("new_projectid", "value"),
-#     ],
-#     [
-#         Input("add_project_button", "n_clicks"),
-#         State("new_funding", "value"),
-#         State("new_topic", "value"),
-#         State("new_topic_class", "value"),
-#         State("new_argus", "value"),
-#         State("new_charging", "value"),
-#         State("rec_account", "value"),
-#         State("new_account_responsible", "value"),
-#         State("new_start", "date"),
-#         State("new_end", "date"),
-#         State("new_project_diff", "value"),
-#         State("new_project_status", "value"),
-#         State("new_text", "value"),
-#         State("new_target", "value")
-#     ]
-#     , prevent_initial_call=True
-#     , suppress_callback_exceptions=True
-# )
-# def new_project(n_clicks, funding, topic, topic_class, argus, charging, rec_account, account_resp, start, end, difficulty, status, description, target):
 
-#     if ((funding != None) and (topic != None) and (topic_class != None) and (argus != None) and (charging != None) and(rec_account != None) and (account_resp != None) and (start != None) and (end != None) and (status != None)):
 
-#         sql = f"""
-#             INSERT INTO project (funding_id, topic, topic_class_id, argus_enabled, way_charging, recieving_account, cost_center_respon, start_date, end_date, difficulty, project_status, project_description, project_goals) VALUES 
-#             (
-#                 (SELECT founding_source_id FROM founding_sources WHERE founding_source = '{funding}'),
-#                 '{topic}',
-#                 (SELECT topic_class_id FROM topic_class WHERE topic_class = '{topic_class}'),
-#                 '{argus}',
-#                 '{charging}',
-#                 '{rec_account}',
-#                 '{account_resp}',
-#                 '{start}',
-#                 '{end}',
-#                 '{difficulty}',
-#                 '{status}',
-#                 '{description}',
-#                 '{target}'
-#             );
-#         """
-
-#         data = execute_sql(sql)
-
-#     sql= "SELECT project_id FROM project"
-#     data=execute_sql(sql)
-
-#     data=pd.DataFrame(data, columns=["project_id"])
-#     list_data=list(data["project_id"])
-#     list_data.sort()
-#     project_options = get_option_list(list_data)
-
-#     sql = f"SELECT project_id FROM project WHERE topic = '{topic}';"
-#     new_index = execute_sql(sql)[0][0]
-
-#     return project_options, new_index
-
-
-
-# @dash.callback(
-#     [
-#         Output("new_funding", "value"),
-#         Output("new_topic", "value"),
-#         Output("new_topic_class", "value"),
-#         Output("new_argus", "value"),
-#         Output("new_charging", "value"),
-#         Output("rec_account", "value"),
-#         Output("new_account_responsible", "value"),
-#         Output("new_start", "date"),
-#         Output("new_end", "date"),
-#         Output("new_project_diff", "value"),
-#         Output("new_project_status", "value"),
-#         Output("new_text", "value"),
-#         Output("new_target", "value")
-#     ],
-#     [
-#         Input("new_projectid", "value"),
-#     ]
-#     , prevent_initial_call=True
-#     , suppress_callback_exceptions=True
-# )
-# def load_project(project_id):
-
-#     if project_id != None:
-
-#         sql = f"""
-#             SELECT fs.founding_source, p.topic, tc.topic_class, p.argus_enabled, p.way_charging, p.recieving_account, p.cost_center_respon, p.start_date, p.end_date, p.difficulty, p.project_status, p.project_description, p.project_goals
-#             FROM project p
-#             INNER JOIN topic_class tc
-#             ON p.topic_class_id = tc.topic_class_id
-#             INNER JOIN founding_sources fs
-#             ON p.funding_id = fs.founding_source_id
-#             WHERE p.project_id = '{project_id}';
-#         """
-
-#         data = execute_sql(sql)
-
-#         data = pd.DataFrame(data, columns=["funding", "topic", "topic_class", "argus", "charging", "rec_account", "account_resp", "start", "end", "difficulty", "status", "description", "target"])
-
-#         funding = data.loc[0, "funding"]
-#         topic = data.loc[0, "topic"]
-#         topic_class = data.loc[0, "topic_class"]
-#         argus = data.loc[0, "argus"]
-#         charging = data.loc[0, "charging"]
-#         rec_account = data.loc[0, "rec_account"]
-#         account_resp = data.loc[0, "account_resp"]
-#         start = data.loc[0, "start"]
-#         end = data.loc[0, "end"]
-#         difficulty = data.loc[0, "difficulty"]
-#         status = data.loc[0, "status"]
-#         description = data.loc[0, "description"]
-#         target = data.loc[0, "target"]
-    
-#     else:
-#         funding = topic = topic_class = argus = charging = rec_account = account_resp = start = end = difficulty = status = description = target = None
-
-#     return funding, topic, topic_class, argus, charging, rec_account, account_resp, start, end, difficulty, status, description, target
-
-
-
-# @dash.callback(
-#     [
-#         Output("budget_year", "min"),
-#         Output("budget_year", "max")
-#     ],
-#     [
-#         Input("new_start", "date"),
-#         Input("new_end", "date")
-#     ]
-#     , prevent_initial_call=True
-#     , suppress_callback_exceptions=True
-# )
-# def update_budget_year_limits(start_date, end_date):
-
-#     year_low = datetime.strptime(start_date, "%Y-%m-%d")
-#     year_high = datetime.strptime(end_date, "%Y-%m-%d")
-
-#     return year_low.year, year_high.year
-
-
-
-
-# @dash.callback(
-#     Output("update_project", "style"),
-#     [
-#         Input("update_project_button", "n_clicks"),
-#         State("new_projectid", "value"),
-#         State("new_funding", "value"),
-#         State("new_topic", "value"),
-#         State("new_topic_class", "value"),
-#         State("new_argus", "value"),
-#         State("new_charging", "value"),
-#         State("rec_account", "value"),
-#         State("new_account_responsible", "value"),
-#         State("new_start", "date"),
-#         State("new_end", "date"),
-#         State("new_project_diff", "value"),
-#         State("new_project_status", "value"),
-#         State("new_text", "value"),
-#         State("new_target", "value")
-#     ]
-#     , prevent_initial_call=True
-#     , suppress_callback_exceptions=True
-# )
-# def update_project(n_clicks, project_id, funding, topic, topic_class, argus, charging, rec_account, account_resp, start, end, difficulty, status, description, target):
-
-#     sql = f"""
-#         UPDATE project
-#         SET
-#         funding_id = (SELECT founding_source_id FROM founding_sources WHERE founding_source = '{funding}'),
-#         topic = '{topic}',
-#         topic_class_id = (SELECT topic_class_id FROM topic_class WHERE topic_class = '{topic_class}'),
-#         argus_enabled = '{argus}',
-#         way_charging = '{charging}',
-#         recieving_account = '{rec_account}',
-#         cost_center_respon = '{account_resp}',
-#         start_date = '{start}',
-#         end_date = '{end}',
-#         difficulty = '{difficulty}',
-#         project_status = '{status}',
-#         project_description = '{description}',
-#         project_goals = '{target}'
-#         WHERE project_id = '{project_id}';
-#     """
-#     data = execute_sql(sql)
-#     data
-
-#     color = {"background-color": "white"}
-
-#     return color
-
-
-# @dash.callback(
-#     Output("add_button", "style"),
-#     [
-#         Input("update_project_button", "n_clicks"),
-#         Input("add_button_button", "n_clicks"),
-#         Input("new_projectid", "value"),
-#         State("single_teammember", "value"),
-#     ]
-#     , prevent_initial_call=True
-#     , suppress_callback_exceptions=True
-# )
-# def update_project_teammember(update_button, add_button, project_id, teammember):
-
-#     if ((project_id != None) and (teammember != None)):
-
-#         sql = f"""
-#             INSERT INTO project_team_members(project_id, team_id) VALUES
-#             (
-#                 (SELECT project_id FROM project WHERE project_id = '{project_id}'),
-#                 (SELECT team_id FROM team_members WHERE full_name = '{teammember}')
-#             )
-#         """
-#         execute_sql(sql)
-
-#     color = {"background-color": "white"}
-
-#     return color
-
-
-# @dash.callback(
-#     Output("delete_button", "style"),
-#     [
-#         Input("delete_button_button", "n_clicks"),
-#         Input("new_projectid", "value"),
-#         State("single_teammember", "value"),
-#     ]
-#     , prevent_initial_call=True
-#     , suppress_callback_exceptions=True
-# )
-# def delete_project_teammember(delete_button, project_id, teammember):
-
-#     if ((project_id != None) and (teammember != None)):
-
-#         sql = f"""
-#             DELETE FROM project_team_members
-#             WHERE
-#             project_id in (SELECT project_id FROM project WHERE project_id = '{project_id}')
-#             AND
-#             team_id in (SELECT team_id FROM team_members WHERE full_name = '{teammember}');
-#         """
-#         execute_sql(sql)
-
-#     color = {"background-color": "white"}
-
-#     return color
-
-
-# @dash.callback(
-#     Output("table_team", "children"),
-#     [
-#         Input("update_project_button", "n_clicks"),
-#         Input("add_button_button", "n_clicks"),
-#         Input("delete_button_button", "n_clicks"),
-#         Input("new_projectid", "value"),
-#     ]
-#     , prevent_initial_call=True
-#     , suppress_callback_exceptions=True
-# )
-# def update_project_teammember_table(update_button, add_button, delete_button, project_id):
-
-#     if (project_id != None):
-
-#         sleep(1)
-
-#         sql = f"""
-#             SELECT tm.full_name
-#             FROM team_members tm
-#             INNER JOIN project_team_members ptm
-#             ON ptm.team_id = tm.team_id
-#             INNER JOIN project p
-#             ON p.project_id = ptm.project_id
-#             WHERE p.project_id = '{project_id}'
-#             """
-
-#         data = execute_sql(sql)
-
-#         data = pd.DataFrame(data, columns=["active PrAI Team members"])
-
-#         df_team = dash_table.DataTable(
-#             id = "table_teammembers",
-#             columns=[{"name": str(i), "id": str(i)} for i in data.columns],
-#             data=data.to_dict("records"),
-#             style_table={"height": "200px", "overflow": "auto", "width": "300px"},
-#             style_as_list_view=True,
-#             style_header={"fontweight": "bold", "font-family": "sans-serif"},
-#             style_cell={
-#                 "font-family": "sans-serif", 
-#                 'overflow': 'hidden',
-#                 "minWidth": 60
-#                 },
-#             row_selectable=False,
-#         )
-#     else: 
-#         df_team = None
-
-#     return df_team
-
-
-# @dash.callback(
-
-#     Output("table_deadlines", "children"),
-#     [
-#         Input("new_projectid", "value"),
-#         Input("add_deadline_button", "n_clicks"),
-#         Input("update_project_button", "n_clicks"),
-#         Input("delete_deadline_button", "n_clicks"),
-#     ]
-#     , prevent_initial_call=True
-#     , suppress_callback_exceptions=True
-# )
-# def update_project_deadlines_table(project_id, deadline_button, update_project_button, delete_deadline_button):
-
-#     if (project_id != None):
-
-#         sleep(1)
-
-#         sql = f"""
-#             SELECT deadline_date, deadline_text FROM project_deadlines
-#             WHERE project_id = {project_id}
-#             """
-#         data=execute_sql(sql)
-
-#         data = pd.DataFrame(data, columns=["Date", "Topic"])
-
-#         data = data.sort_values(by="Date")
-
-#         df_deadline = dash_table.DataTable(
-#             id = "deadlines_table",
-#             columns=[{"name": str(i), "id": str(i)} for i in data.columns],
-#             data=data.to_dict("records"),
-#             style_table={"height": "200px", "overflow": "auto", "width": "400px"},
-#             style_as_list_view=True,
-#             style_header={"fontweight": "bold", "font-family": "sans-serif"},
-#             style_cell={
-#                 "font-family": "sans-serif", 
-#                 'overflow': 'hidden',
-#                 "minWidth": 60
-#                 },
-#             row_selectable="single",
-#         )
-
-#     else: 
-#         df_deadline = None
-
-#     return df_deadline
-
-
-
-
-
-# @dash.callback(
-#     Output("add_deadline_button", "style"),
-#     [
-#         Input("add_deadline_button", "n_clicks"),
-#         State("deadline_date", "date"),
-#         State("deadline_topic", "value"),
-#         State("new_projectid", "value"),
-#     ]
-#     , prevent_initial_call=True
-#     , suppress_callback_exceptions=True
-# )
-# def update_deadlines_table(add_button, deadline_date, deadline_topic, project_id):
-
-#     if ((deadline_date != None) and (deadline_topic != None) and (project_id != None)):
-
-#         sql = f"""
-#             INSERT INTO project_deadlines(project_id, deadline_date, deadline_text) VALUES
-#             (
-#                 (SELECT project_id FROM project WHERE project_id = '{project_id}'),
-#                 '{deadline_date}',
-#                 '{deadline_topic}'
-#             );
-#         """
-#         data = execute_sql(sql)
-#         data
-
-#     color = {"background-color": "white"}
-
-#     return color
-
-
-# @dash.callback(
-#     Output("delete_deadline_button", "style"),
-#     [
-#         Input("delete_deadline_button", "n_clicks"),
-#         State("deadline_date", "date"),
-#         State("deadline_topic", "value"),
-#         State("new_projectid", "value"),
-#     ]
-#     , prevent_initial_call=True
-#     , suppress_callback_exceptions=True
-# )
-# def remove_deadlines_table(button, deadline_date, deadline_topic, project_id):
-
-#     if ((deadline_date != None) and (deadline_topic != None) and (project_id != None)):
-
-#         sql = f"""
-
-#             DELETE FROM project_deadlines
-#             WHERE
-#             project_id in (SELECT project_id FROM project WHERE project_id = '{project_id}')
-#             AND
-#             deadline_date = '{deadline_date}'
-#             AND
-#             deadline_text = '{deadline_topic}';
-#         """
-#         data = execute_sql(sql)
-#         data
-
-#     color = {"background-color": "white"}
-
-#     return color
-
-
-
-
-# @dash.callback(
-#     [
-#         Output("deadline_date", "date"),
-#         Output("deadline_topic", "value")
-#     ],
-#     [
-#         Input("deadlines_table", "selected_rows"),
-#         Input("deadlines_table", "data"),
-#         State("new_projectid", "value"),
-#     ]
-#     , prevent_initial_call=True
-#     , suppress_callback_exceptions=True
-# )
-# def select_table(selected_row, raw_data, projectid):
-
-#     if ((projectid != None) and (raw_data != None) and (selected_row != None)):
-
-#         data = pd.DataFrame(raw_data, columns=["Date", "Topic"])
-
-#         date = list(set(data.loc[selected_row, "Date"]))[0]
-#         topic = list(set(data.loc[selected_row, "Topic"]))[0]
-#     else:
-#         date = topic = None
-
-#     return date, topic
-
-
-
-# @dash.callback(
-
-#     Output("table_projects_overview", "children"),
-#     [
-#         Input("update_project_button", "n_clicks"),
-#         Input("add_button_button", "n_clicks"),
-#         Input("new_projectid", "value")
-#     ]
-#     , prevent_initial_call=True
-#     , suppress_callback_exceptions=True
-# )
-# def update_project_table(update_project_button, add_project_button, project_id_value):
-
-#     sql="""
-#         SELECT p.project_id, p.topic, tc.topic_class, fs.founding_source, p.project_description
-#         FROM project p
-#         INNER JOIN founding_sources fs
-#         ON p.funding_id = fs.founding_source_id
-#         INNER JOIN topic_class tc
-#         ON p.topic_class_id = tc.topic_class_id
-#     """
-#     data=execute_sql(sql)
-
-#     data = pd.DataFrame(data, columns=["project_id", "Topic", "Topic_Class", "Founding Source", "Project Desc."])
-
-#     data = data.sort_values(by="project_id")
-
-#     df_projects = dash_table.DataTable(
-#         id = "projects_table",
-#         columns=[{"name": str(i), "id": str(i)} for i in data.columns],
-#         data=data.to_dict("records"),
-#         style_table={"height": "400px", "overflow": "auto", "width": "1300px"},
-#         style_as_list_view=True,
-#         style_header={"fontweight": "bold", "font-family": "sans-serif"},
-#         style_cell={
-#             "font-family": "sans-serif", 
-#             'overflow': 'hidden',
-#             "minWidth": 60
-#             },
-#         row_selectable="single",
-#     )
-
-#     return df_projects
-
-
-
-
-# @dash.callback(
-
-#     Output("table_yearly_budget", "children"),
-#     [
-#         Input("new_projectid", "value"),
-#         Input("add_budget_button", "n_clicks"),
-#         Input("update_budget_button", "n_clicks"),
-#         Input("delete_budget_button", "n_clicks")
-#     ]
-#     , prevent_initial_call=True
-#     , suppress_callback_exceptions=True
-# )
-# def update_project_budget_table(project_id, add_budget_button, update_budget_button, delete_budget_button):
-
-#     if project_id != None:
-
-#         sleep(0.1)
-
-#         sql=f"""
-#             SELECT pbp.year, pbp.budget
-#             FROM project_budget_planning pbp
-#             WHERE project_id = {project_id}
-#         """
-#         data=execute_sql(sql)
-
-#         data = pd.DataFrame(data, columns=["Year", "Budget"])
-
-#         data = data.sort_values(by="Year")
-
-#         df_budget_table = dash_table.DataTable(
-#             id = "project_budget_table",
-#             columns=[{"name": str(i), "id": str(i)} for i in data.columns],
-#             data=data.to_dict("records"),
-#             style_table={"height": "400px", "overflow": "auto", "width": "300px"},
-#             style_as_list_view=True,
-#             style_header={"fontweight": "bold", "font-family": "sans-serif"},
-#             style_cell={
-#                 "font-family": "sans-serif", 
-#                 'overflow': 'hidden',
-#                 "minWidth": 60
-#                 },
-#             row_selectable=False,
-#         )
-    
-#     else:
-#         df_budget_table = None
-
-#     return df_budget_table
-
-
-
-
+# TODO
 # @dash.callback(
 #     Output("add_budget_button", "style"),
 #     [
