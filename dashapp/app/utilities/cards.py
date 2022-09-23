@@ -147,6 +147,7 @@ def small_icon_card(
                     style={
                         "height": "70px", 
                         "width": "70px", 
+                        "background-color": "white"
                         })
                 ],
                 style={"background-color": color,

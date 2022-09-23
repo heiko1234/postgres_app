@@ -336,3 +336,24 @@ execute_sql(sql)
 # execute_sql(sql)
 
 
+
+sql = """
+    CREATE Table team_year_project_budget 
+    (
+        ttpb_id SERIAL UNIQUE PRIMARY KEY,
+        year integer NOT NULL,
+        team_id INTEGER NOT NULL,
+        FOREIGN KEY (team_id)
+            REFERENCES team_members (team_id)
+            ON UPDATE CASCADE ON DELETE CASCADE,
+        project_id INTEGER NOT NULL,
+        FOREIGN KEY (project_id)
+            REFERENCES project (project_id)
+            ON UPDATE CASCADE ON DELETE CASCADE,
+        project_yearly_budget INTEGER NOT NULL,
+        UNIQUE (year, team_id, project_id)
+    );
+"""
+execute_sql(sql)
+
+
