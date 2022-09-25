@@ -198,6 +198,7 @@ cursor.executemany(sql_statement, values_list)
 sql_statement = "INSERT INTO topic_class(topic_class) VALUES(%s)"
 
 values_list=[
+    ("Data Connection",),
     ("Underst. Hist. Data",),
     ("Root Cause Analysis",),
     ("Anomalie Detection",),
@@ -356,4 +357,5 @@ sql = """
 """
 execute_sql(sql)
 
-
+# sql = "DROP TABLE team_year_project_budget"
+# execute_sql(sql)

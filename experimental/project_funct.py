@@ -8,7 +8,7 @@ import psycopg2
 def execute_sql(sql):
     #establishing the connection
     conn = psycopg2.connect(
-        database="team", user='postgres', password='postgres', host='127.30.0.1', port= '5432'
+        database="teams", user='postgres', password='postgres', host='127.30.0.1', port= '5432'
     )
     conn.autocommit = True
 
@@ -431,4 +431,132 @@ execute_sql(sql)
 
 sql = "SELECT * FROM project_budget_planning"
 execute_sql(sql)
+
+
+
+
+project_id = 1
+
+sql = f"""
+    SELECT typb.year, tm.full_name, typb.project_yearly_budget
+    FROM team_year_project_budget typb
+    INNER JOIN team_members tm
+    ON typb.team_id = tm.team_id
+    WHERE typb.project_id = '{project_id}'
+"""
+data=execute_sql(sql)
+data
+
+
+year = 2022
+project_id = 1
+teammember = "Heiko Kulinna"
+teammember_budget = 50
+
+
+sql = f"""
+    INSERT INTO team_year_project_budget(project_id, year, team_id, project_yearly_budget) VALUES
+    (
+        (SELECT project_id FROM project WHERE project_id = '{project_id}'),
+        '{year}',
+        (SELECT team_id FROM team_members WHERE full_name ='{teammember}'),
+        '{teammember_budget}'
+    );
+"""
+data = execute_sql(sql)
+
+
+
+sql = f"""
+    UPDATE team_year_project_budget
+    SET
+    project_yearly_budget = '{teammember_budget}'
+    WHERE project_id = '{project_id}' AND year = '{year}' AND team_id = (SELECT team_id FROM team_members WHERE full_name ='{teammember}');
+"""
+execute_sql(sql)
+
+
+sql = f"""
+    DELETE FROM team_year_project_budget
+    WHERE
+    project_id = '{project_id}'
+    AND
+    year = '{year}'
+    AND
+    team_id = (SELECT team_id FROM team_members WHERE full_name ='{teammember}');
+    """
+execute_sql(sql)
+
+
+
+import pandas as pd
+
+df = pd.DataFrame()
+
+
+df["names"] = ["Hiko", "Ralf"]
+df["2021"] = [100, 150]
+df["2022"] = [50, 90]
+
+df["Sum"] = df[df.columns].sum(axis=1, numeric_only=True)
+df
+
+df[df.columns].sum(axis=0, numeric_only=True)
+
+["Sum"]+list(df[df.columns].sum(axis=0, numeric_only=True))
+
+# df.append(pd.Series(["Sum"]+list(df[df.columns].sum(axis=0, numeric_only=True))), ignore_index=True)
+
+inter_df = pd.DataFrame([["Sum"]+list(df[df.columns].sum(axis=0, numeric_only=True))], columns = df.columns)
+inter_df
+
+pd.concat([df, inter_df], axis=0)
+
+
+
+overview_teammember = "Heiko Kulinna"
+overview_year = 2022
+
+
+sql = f"""
+    SELECT project_id, month, working_days, working_booking FROM project_time_budget
+    WHERE team_id in (SELECT team_id FROM team_members WHERE full_name = '{overview_teammember}')
+    AND year = '{overview_year}';
+"""
+
+data=execute_sql(sql = sql)
+data = pd.DataFrame(data, columns=["project_id", "month", "working_days", "working_booking"])
+data = data.pivot(index="project_id", columns="month", values="working_booking")
+data = data.reset_index(drop = False)
+data = data.reset_index(drop = True)
+
+data = data.sort_values(by="project_id")
+data
+
+data.columns
+# Index(['project_id', 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], dtype='object', name='month')
+
+
+list_sum = ["sum"]+list(data[data.columns[1:]].sum(axis=0, numeric_only=True))
+print(list_sum)
+len(list_sum)
+print(list(data.columns))
+len(list(data.columns))  #13
+inter_data = pd.DataFrame([list_sum], columns = data.columns)
+inter_data
+
+print(inter_data)
+
+# add Sum column and rows
+# data["Sum"] = round(data[data.columns[1:]].sum(axis=1, numeric_only=True),2)
+
+
+
+
+# data=pd.concat([data, inter_data], axis=0)
+# data = inter_data
+data = data.reset_index(drop = True)
+
+
+
 

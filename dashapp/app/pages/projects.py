@@ -319,8 +319,8 @@ layout = html.Div(
         aproject_card,
         html.Div(
             children=[
-                assign_project,
                 assigned_team,
+                assign_project,
             ],
             style={"display": "flex"}
         ),
@@ -527,7 +527,9 @@ def load_project(project_id):
 @dash.callback(
     [
         Output("budget_year", "min"),
-        Output("budget_year", "max")
+        Output("budget_year", "max"),
+        Output("budget_team_year", "min"),
+        Output("budget_team_year", "max")
     ],
     [
         Input("new_start", "date"),
@@ -550,7 +552,7 @@ def update_budget_year_limits(start_date, end_date):
         year_low = None
         year_high = None
 
-    return year_low, year_high
+    return year_low, year_high, year_low, year_high
 
 
 # update project
@@ -1058,8 +1060,7 @@ def update_project_table(update_project_button, add_project_button, project_id_v
 
 
 
-
-
+# TODO
 # small_icon_card(id="projects_add_budget_button", icon="add", color="white"),
 # add yearly budget to project
 @dash.callback(
@@ -1067,7 +1068,10 @@ def update_project_table(update_project_button, add_project_button, project_id_v
     [
         Input("projects_add_budget_button", "n_clicks"),
         Input("update_timer", "n_intervals"),
-        State("projects_add_budget_button_button", "style")
+        State("projects_add_budget_button_button", "style"),
+        State("new_projectid", "value"),
+        State("budget_year", "value"),
+        State("yearly_budget", "value")
     ]
     , prevent_initial_call=True
     , suppress_callback_exceptions=True
@@ -1075,7 +1079,10 @@ def update_project_table(update_project_button, add_project_button, project_id_v
 def projects_add_budget(
     n_clicks, 
     n_interval, 
-    style
+    style,
+    project_id,
+    budget_year,
+    yearly_budget
     ):
 
     button_id = ctx.triggered_id
@@ -1086,9 +1093,28 @@ def projects_add_budget(
             "width": "70px"}
 
     elif (button_id == "projects_add_budget_button"):
-        color = {"background-color": "green",
-            "height": "70px", 
-            "width": "70px"}
+
+        if ((project_id != None) and (budget_year != None) and (yearly_budget != None)):
+
+            sql = f"""
+                INSERT INTO project_budget_planning (project_id, year, budget) VALUES
+                (
+                    (SELECT project_id FROM project WHERE project_id = '{project_id}'),
+                    '{budget_year}',
+                    '{yearly_budget}'
+                );
+            """
+
+            data=execute_sql(sql)
+
+            color = {"background-color": "green",
+                "height": "70px", 
+                "width": "70px"}
+        
+        else:
+            color = {"background-color": "white",
+                "height": "70px", 
+                "width": "70px"}
 
     else: 
         color = {"background-color": "white",
@@ -1098,6 +1124,7 @@ def projects_add_budget(
     return color
 
 
+# TODO
 # small_icon_card(id="projects_update_budget_button", icon="update", color="white"),
 # update yearly budget
 @dash.callback(
@@ -1105,7 +1132,10 @@ def projects_add_budget(
     [
         Input("projects_update_budget_button", "n_clicks"),
         Input("update_timer", "n_intervals"),
-        State("projects_update_budget_button_button", "style")
+        State("projects_update_budget_button_button", "style"),
+        State("new_projectid", "value"),
+        State("budget_year", "value"),
+        State("yearly_budget", "value")
     ]
     , prevent_initial_call=True
     , suppress_callback_exceptions=True
@@ -1113,7 +1143,10 @@ def projects_add_budget(
 def projects_update_budget(
     n_clicks, 
     n_interval, 
-    style
+    style,
+    project_id,
+    budget_year,
+    yearly_budget
     ):
 
     button_id = ctx.triggered_id
@@ -1124,44 +1157,18 @@ def projects_update_budget(
             "width": "70px"}
 
     elif (button_id == "projects_update_budget_button"):
-        color = {"background-color": "green",
-            "height": "70px", 
-            "width": "70px"}
 
-    else: 
-        color = {"background-color": "white",
-            "height": "70px", 
-            "width": "70px"}
+        sql = f"""
+            UPDATE project_budget_planning
+            SET
+            project_id = (SELECT project_id FROM project WHERE project_id = '{project_id}'),
+            year = '{budget_year}',
+            budget = '{yearly_budget}'
+            WHERE project_id = '{project_id}' 
+            AND year = '{budget_year}';
+        """
+        execute_sql(sql)
 
-    return color
-
-
-# small_icon_card(id="projects_delete_budget_button", icon="delete", color="white"),
-# delete budget
-@dash.callback(
-    Output("projects_delete_budget_button_button", "style"),
-    [
-        Input("projects_delete_budget_button", "n_clicks"),
-        Input("update_timer", "n_intervals"),
-        State("projects_delete_budget_button_button", "style")
-    ]
-    , prevent_initial_call=True
-    , suppress_callback_exceptions=True
-)
-def projects_delete_budget(
-    n_clicks, 
-    n_interval, 
-    style
-    ):
-
-    button_id = ctx.triggered_id
-
-    if ((button_id == "update_timer") and (style['background-color'] == "green")):
-        color = {"background-color": "white",
-            "height": "70px", 
-            "width": "70px"}
-
-    elif (button_id == "projects_delete_budget_button"):
         color = {"background-color": "green",
             "height": "70px", 
             "width": "70px"}
@@ -1175,54 +1182,114 @@ def projects_delete_budget(
 
 
 # TODO
-# @dash.callback(
+# small_icon_card(id="projects_delete_budget_button", icon="delete", color="white"),
+# delete budget
+@dash.callback(
+    Output("projects_delete_budget_button_button", "style"),
+    [
+        Input("projects_delete_budget_button", "n_clicks"),
+        Input("update_timer", "n_intervals"),
+        State("projects_delete_budget_button_button", "style"),
+        State("new_projectid", "value"),
+        State("budget_year", "value"),
+    ]
+    , prevent_initial_call=True
+    , suppress_callback_exceptions=True
+)
+def projects_delete_budget(
+    n_clicks, 
+    n_interval, 
+    style,
+    project_id,
+    budget_year
+    ):
 
-#     Output("table_yearly_budget", "children"),
-#     [
-#         Input("new_projectid", "value"),
-#         Input("add_budget_button", "n_clicks"),
-#         Input("update_budget_button", "n_clicks"),
-#         Input("delete_budget_button", "n_clicks")
-#     ]
-#     , prevent_initial_call=True
-#     , suppress_callback_exceptions=True
-# )
-# def update_project_budget_table(project_id, add_budget_button, update_budget_button, delete_budget_button):
+    button_id = ctx.triggered_id
 
-#     if project_id != None:
+    if ((button_id == "update_timer") and (style['background-color'] == "green")):
+        color = {"background-color": "white",
+            "height": "70px", 
+            "width": "70px"}
 
-#         sleep(0.1)
+    elif (button_id == "projects_delete_budget_button"):
 
-#         sql=f"""
-#             SELECT pbp.year, pbp.budget
-#             FROM project_budget_planning pbp
-#             WHERE project_id = {project_id}
-#         """
-#         data=execute_sql(sql)
+        if ((project_id != None) and (budget_year != None)):
 
-#         data = pd.DataFrame(data, columns=["Year", "Budget"])
+            sql = f"""
+                DELETE FROM project_budget_planning
+                WHERE
+                project_id in (SELECT project_id FROM project WHERE project_id = '{project_id}')
+                AND
+                year = '{budget_year}';
+                """
 
-#         data = data.sort_values(by="Year")
+            execute_sql(sql)
+            color = {"background-color": "green",
+                "height": "70px", 
+                "width": "70px"}
+        
+        else:
+            color = {"background-color": "white",
+                "height": "70px", 
+                "width": "70px"}
 
-#         df_budget_table = dash_table.DataTable(
-#             id = "project_budget_table",
-#             columns=[{"name": str(i), "id": str(i)} for i in data.columns],
-#             data=data.to_dict("records"),
-#             style_table={"height": "400px", "overflow": "auto", "width": "300px"},
-#             style_as_list_view=True,
-#             style_header={"fontweight": "bold", "font-family": "sans-serif"},
-#             style_cell={
-#                 "font-family": "sans-serif", 
-#                 'overflow': 'hidden',
-#                 "minWidth": 60
-#                 },
-#             row_selectable=False,
-#         )
+    else: 
+        color = {"background-color": "white",
+            "height": "70px", 
+            "width": "70px"}
+
+    return color
+
+
+# show update project budget table
+@dash.callback(
+
+    Output("table_yearly_budget", "children"),
+    [
+        Input("new_projectid", "value"),
+        Input("projects_add_budget_button", "n_clicks"),
+        Input("projects_update_budget_button", "n_clicks"),
+        Input("projects_delete_budget_button", "n_clicks")
+    ]
+    , prevent_initial_call=True
+    , suppress_callback_exceptions=True
+)
+def update_project_budget_table(project_id, add_budget, update_budget, delete_budget):
+
+    if project_id != None:
+
+        sleep(0.1)
+
+        sql=f"""
+            SELECT pbp.year, pbp.budget
+            FROM project_budget_planning pbp
+            WHERE project_id = {project_id}
+        """
+        data=execute_sql(sql)
+
+        data = pd.DataFrame(data, columns=["Year", "Budget"])
+
+        data = data.sort_values(by="Year")
+
+        df_budget_table = dash_table.DataTable(
+            id = "project_budget_table",
+            columns=[{"name": str(i), "id": str(i)} for i in data.columns],
+            data=data.to_dict("records"),
+            style_table={"height": "400px", "overflow": "auto", "width": "300px"},
+            style_as_list_view=True,
+            style_header={"fontweight": "bold", "font-family": "sans-serif"},
+            style_cell={
+                "font-family": "sans-serif", 
+                'overflow': 'hidden',
+                "minWidth": 60
+                },
+            row_selectable=False,
+        )
     
-#     else:
-#         df_budget_table = None
+    else:
+        df_budget_table = None
 
-#     return df_budget_table
+    return df_budget_table
 
 
 
@@ -1237,7 +1304,11 @@ def projects_delete_budget(
     [
         Input("projects_add_team_budget_button", "n_clicks"),
         Input("update_timer", "n_intervals"),
-        State("projects_add_team_budget_button_button", "style")
+        State("projects_add_team_budget_button_button", "style"),
+        State("new_projectid", "value"),
+        State("budget_team_year", "value"),
+        State("yearly_single_teammember", "value"),
+        State("yearly_team_budget", "value")
     ]
     , prevent_initial_call=True
     , suppress_callback_exceptions=True
@@ -1245,7 +1316,11 @@ def projects_delete_budget(
 def projects_add_budget_to_team(
     n_clicks, 
     n_interval, 
-    style
+    style,
+    project_id,
+    year,
+    teammember,
+    teammember_budget
     ):
 
     button_id = ctx.triggered_id
@@ -1256,6 +1331,18 @@ def projects_add_budget_to_team(
             "width": "70px"}
 
     elif (button_id == "projects_add_team_budget_button"):
+
+        sql = f"""
+            INSERT INTO team_year_project_budget(project_id, year, team_id, project_yearly_budget) VALUES
+            (
+                (SELECT project_id FROM project WHERE project_id = '{project_id}'),
+                '{year}',
+                (SELECT team_id FROM team_members WHERE full_name ='{teammember}'),
+                '{teammember_budget}'
+            );
+        """
+        data = execute_sql(sql)
+
         color = {"background-color": "green",
             "height": "70px", 
             "width": "70px"}
@@ -1275,7 +1362,11 @@ def projects_add_budget_to_team(
     [
         Input("projects_update_team_budget_button", "n_clicks"),
         Input("update_timer", "n_intervals"),
-        State("projects_update_team_budget_button_button", "style")
+        State("projects_update_team_budget_button_button", "style"),
+        State("new_projectid", "value"),
+        State("budget_team_year", "value"),
+        State("yearly_single_teammember", "value"),
+        State("yearly_team_budget", "value")
     ]
     , prevent_initial_call=True
     , suppress_callback_exceptions=True
@@ -1283,7 +1374,11 @@ def projects_add_budget_to_team(
 def projects_update_budget_to_team(
     n_clicks, 
     n_interval, 
-    style
+    style,
+    project_id,
+    year,
+    teammember,
+    teammember_budget
     ):
 
     button_id = ctx.triggered_id
@@ -1294,6 +1389,16 @@ def projects_update_budget_to_team(
             "width": "70px"}
 
     elif (button_id == "projects_update_team_budget_button"):
+
+
+        sql = f"""
+            UPDATE team_year_project_budget
+            SET
+            project_yearly_budget = '{teammember_budget}'
+            WHERE project_id = '{project_id}' AND year = '{year}' AND team_id = (SELECT team_id FROM team_members WHERE full_name ='{teammember}');
+        """
+        execute_sql(sql)
+
         color = {"background-color": "green",
             "height": "70px", 
             "width": "70px"}
@@ -1313,7 +1418,10 @@ def projects_update_budget_to_team(
     [
         Input("projects_delete_team_budget_button", "n_clicks"),
         Input("update_timer", "n_intervals"),
-        State("projects_delete_team_budget_button_button", "style")
+        State("projects_delete_team_budget_button_button", "style"),
+        State("new_projectid", "value"),
+        State("budget_team_year", "value"),
+        State("yearly_single_teammember", "value"),
     ]
     , prevent_initial_call=True
     , suppress_callback_exceptions=True
@@ -1321,7 +1429,10 @@ def projects_update_budget_to_team(
 def projects_delete_budget_to_team(
     n_clicks, 
     n_interval, 
-    style
+    style,
+    project_id,
+    year,
+    teammember,
     ):
 
     button_id = ctx.triggered_id
@@ -1332,6 +1443,18 @@ def projects_delete_budget_to_team(
             "width": "70px"}
 
     elif (button_id == "projects_delete_team_budget_button"):
+
+        sql = f"""
+            DELETE FROM team_year_project_budget
+            WHERE
+            project_id = '{project_id}'
+            AND
+            year = '{year}'
+            AND
+            team_id = (SELECT team_id FROM team_members WHERE full_name ='{teammember}');
+            """
+        execute_sql(sql)
+
         color = {"background-color": "green",
             "height": "70px", 
             "width": "70px"}
@@ -1345,100 +1468,65 @@ def projects_delete_budget_to_team(
 
 
 
+# show update project budget table
+@dash.callback(
 
+    Output("table_team", "children"),
+    [
+        Input("new_projectid", "value"),
+        Input("projects_add_team_budget_button", "n_clicks"),
+        Input("projects_update_team_budget_button", "n_clicks"),
+        Input("projects_delete_team_budget_button", "n_clicks")
+    ]
+    , prevent_initial_call=True
+    , suppress_callback_exceptions=True
+)
+def update_project_budget_table(project_id, add_budget, update_budget, delete_budget):
 
-# TODO
-# @dash.callback(
-#     Output("add_budget_button", "style"),
-#     [
-#         Input("add_budget_button", "n_clicks"),
-#         State("new_projectid", "value"),
-#         State("budget_year", "value"),
-#         State("yearly_budget", "value")
-#     ]
-#     , prevent_initial_call=True
-#     , suppress_callback_exceptions=True
-# )
-# def add_project_budget(add_budget_button, project_id, budget_year, yearly_budget):
+    if project_id != None:
 
-#     if ((project_id != None) and (budget_year != None) and (yearly_budget != None)):
+        sleep(0.1)
 
-#         sql = f"""
-#             INSERT INTO project_budget_planning (project_id, year, budget) VALUES
-#             (
-#                 (SELECT project_id FROM project WHERE project_id = '{project_id}'),
-#                 '{budget_year}',
-#                 '{yearly_budget}'
-#             );
-#         """
+        sql = f"""
+            SELECT typb.year, tm.full_name, typb.project_yearly_budget
+            FROM team_year_project_budget typb
+            INNER JOIN team_members tm
+            ON typb.team_id = tm.team_id
+            WHERE typb.project_id = '{project_id}'
+        """
+        data=execute_sql(sql)
 
-#         data=execute_sql(sql)
+        data = pd.DataFrame(data, columns=["Year", "Team member", "Budget"])
 
-#         color = {"background-color": "white"}
+        data = data.pivot(index="Team member", columns = "Year", values= "Budget")
+        data =data.reset_index(drop=False)
 
-#         return color
+        data = data.sort_values(by="Team member")
 
+        inter_data = pd.DataFrame([["Sum"]+list(data[data.columns].sum(axis=0, numeric_only=True))], columns = data.columns)
+        data=pd.concat([data, inter_data], axis=0)
 
+        data["Sum"] = data[data.columns].sum(axis=1, numeric_only=True)
 
-# @dash.callback(
-#     Output("delete_budget_button", "style"),
-#     [
-#         Input("delete_budget_button", "n_clicks"),
-#         State("new_projectid", "value"),
-#         State("budget_year", "value"),
-#     ]
-#     , prevent_initial_call=True
-#     , suppress_callback_exceptions=True
-# )
-# def delete_project_budget(delete_budget_button, project_id, budget_year):
+        data = data.reset_index(drop = True)
 
-#     if ((project_id != None) and (budget_year != None)):
+        df_budget_table = dash_table.DataTable(
+            id = "project_team_budget_table",
+            columns=[{"name": str(i), "id": str(i)} for i in data.columns],
+            data=data.to_dict("records"),
+            style_table={"height": "400px", "overflow": "auto", "width": "300px"},
+            style_as_list_view=False,
+            style_header={"fontweight": "bold", "font-family": "sans-serif"},
+            style_cell={
+                "font-family": "sans-serif", 
+                'overflow': 'hidden',
+                "minWidth": 60
+                },
+            row_selectable=False,
+        )
+    
+    else:
+        df_budget_table = None
 
-#         sql = f"""
-#         DELETE FROM project_budget_planning
-#         WHERE
-#         project_id in (SELECT project_id FROM project WHERE project_id = '{project_id}')
-#         AND
-#         year = '{budget_year}';
-#         """
-
-#         data=execute_sql(sql)
-
-#         color = {"background-color": "white"}
-
-#         return color
-
-
-
-
-# @dash.callback(
-#     Output("update_budget_button", "style"),
-#     [
-#         Input("update_budget_button", "n_clicks"),
-#         State("new_projectid", "value"),
-#         State("budget_year", "value"),
-#         State("yearly_budget", "value"),
-#     ]
-#     , prevent_initial_call=True
-#     , suppress_callback_exceptions=True
-# )
-# def update_project_budget(delete_budget_button, project_id, budget_year, yearly_budget, teammember):
-
-#     if ((project_id != None) and (budget_year != None)):
-
-#         sql = f"""
-#             UPDATE project_budget_planning
-#             SET
-#             project_id = (SELECT project_id FROM project WHERE project_id = '{project_id}'),
-#             year = '{budget_year}',
-#             budget = '{yearly_budget}'
-#             WHERE project_id = '{project_id}' 
-#             AND year = '{budget_year}';
-#         """
-#         execute_sql(sql)
-
-#         color = {"background-color": "white"}
-
-#         return color
-
+    return df_budget_table
 
