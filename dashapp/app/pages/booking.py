@@ -70,7 +70,7 @@ table_card = content_card_size(
     id="table_card_projects_overview_content",
     title="Project Overview",
     size="1500px", 
-    height="400px",
+    height="350px",
     content=[
         html.Div(
             children=[
@@ -113,7 +113,7 @@ monthly_working = content_card_size(
     id="monthly_working_content",
     title="Monthly Working Days",
     size="900px", 
-    height="400px",
+    height="350px",
     content=[
         html.Div(
             children=[
@@ -135,8 +135,8 @@ monthly_working = content_card_size(
 monthly_budget = content_card_size(
     id="monthly_budget_content",
     title="Monthly budget Days",
-    size="900px", 
-    height="400px",
+    size="1100px", 
+    height="350px",
     content=[
         html.Div(
             children=[
@@ -156,9 +156,25 @@ monthly_budget = content_card_size(
 )
 
 
+entity_budget = content_card_size(
+    id="monthly_budget_content",
+    title="Required Budget",
+    size="300px", 
+    height="350px",
+    content=[
+        mini_card("Full Coverage", a_function=dcc.Loading(id="coverage_budget", style={"width": "130px"})),
+        ]
+    )
+
+
+
 layout = html.Div(
     children=[
-        table_card,
+        html.Div(children=[
+            table_card,
+            entity_budget
+        ],
+        style={"display": "flex"}),
         html.Div(children=[
             monthly_working,
             monthly_budget
@@ -167,6 +183,43 @@ layout = html.Div(
     ],
     style={"display": "block"}
 )
+
+
+
+@dash.callback(
+    Output("coverage_budget", "children"),
+    [
+        Input("overview_year", "value"),
+        Input("overview_teammember", "value"),
+    ]
+    # ,prevent_initial_call=True
+    , suppress_callback_exceptions=True
+)
+def show_eff_coverage(overview_year, overview_teammember):
+
+    sql = f"""
+        SELECT tm.full_name, ti.year, ti.contract, ti.working_month, ti.activity, et.coverage
+        FROM team_members tm
+        INNER JOIN team_info ti
+        ON tm.team_id = ti.team_id
+        INNER JOIN entity_time et
+        ON et.entity_id = tm.legal_entity_id and ti.year = et.year
+        WHERE tm.full_name = '{overview_teammember}'
+        AND
+        ti.year = '{overview_year}'
+    """
+    data = execute_sql(sql)
+
+    df = pd.DataFrame(data, columns=["Fullname", "Year", "Contract", "Working Month", "Activity", "Coverage"])
+
+    df["eff. Coverage"] = round(df["Contract"] * df["Working Month"] * df["Coverage"] * 1/100 * 1/12, 1)
+
+    result=df["eff. Coverage"][0]
+
+
+    return html.H3(result)
+
+
 
 
 
@@ -379,12 +432,35 @@ def update_project_budget_table(
 
     data = data.reset_index(drop = True)
 
+
+    # merge with assigned budget
+    sql = f"""
+        SELECT typb.project_id, typb.project_yearly_budget
+        FROM team_year_project_budget typb
+        INNER JOIN team_members tm
+        ON typb.team_id = tm.team_id
+        WHERE typb.team_id in (SELECT team_id FROM team_members WHERE full_name = '{overview_teammember}')
+        AND
+        typb.year = '{overview_year}'
+    """
+    fdata=execute_sql(sql)
+
+    fdata = pd.DataFrame(fdata, columns=["project_id", "assigned budget"])
+
+    mdata=pd.merge(left=data, right=fdata, left_on="project_id", right_on="project_id")
+
+
+    list_sum = ["sum"]+list(round(mdata[mdata.columns[1:]].sum(axis=0, numeric_only=True), 2))
+    inter_mdata = pd.DataFrame([list_sum], columns = mdata.columns)
+    mdata=pd.concat([mdata, inter_mdata], axis=0)
+
+
     # make table
     df_budget_table = dash_table.DataTable(
         id = "project_monthly_budget_table",
-        columns=[{"name": str(i), "id": str(i)} for i in data.columns],
-        data=data.to_dict("records"),
-        style_table={"height": "300px", "overflow": "auto", "width": "850px"},
+        columns=[{"name": str(i), "id": str(i)} for i in mdata.columns],
+        data=mdata.to_dict("records"),
+        style_table={"height": "300px", "overflow": "auto", "width": "1000px"},
         style_as_list_view=False,  #True
         editable=False,
         style_header={"fontweight": "bold", "font-family": "sans-serif"},
@@ -511,8 +587,6 @@ def update_project_budget_table(
         color = {"background-color": "white",
             "height": "70px", 
             "width": "70px"}
-
-
 
 
     return color

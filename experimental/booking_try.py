@@ -337,3 +337,157 @@ data = data.pivot(index="project_id", columns="month", values="working_booking")
 data
 
 
+
+
+
+
+
+
+
+overview_teammember = "Ralf Kulinna"
+overview_year =2022
+
+
+
+sql = f"""
+    SELECT project_id, month, working_days, working_booking FROM project_time_budget
+    WHERE team_id in (SELECT team_id FROM team_members WHERE full_name = '{overview_teammember}')
+    AND year = '{overview_year}';
+"""
+
+data=execute_sql(sql = sql)
+data = pd.DataFrame(data, columns=["project_id", "month", "working_days", "working_booking"])
+data = data.pivot(index="project_id", columns="month", values="working_booking")
+data = data.reset_index(drop = False)
+data = data.reset_index(drop = True)
+
+data = data.sort_values(by="project_id")
+
+
+list_sum = ["sum"]+list(round(data[data.columns[1:]].sum(axis=0, numeric_only=True), 2))
+inter_data = pd.DataFrame([list_sum], columns = data.columns)
+data=pd.concat([data, inter_data], axis=0)
+
+data["Sum"] = round(data[data.columns[1:]].sum(axis=1, numeric_only=True),2)
+
+data = data.reset_index(drop = True)
+
+data
+
+
+
+
+sql = f"""
+    SELECT typb.project_id, typb.project_yearly_budget
+    FROM team_year_project_budget typb
+    INNER JOIN team_members tm
+    ON typb.team_id = tm.team_id
+    WHERE typb.team_id in (SELECT team_id FROM team_members WHERE full_name = '{overview_teammember}')
+    AND
+    typb.year = '{overview_year}'
+"""
+fdata=execute_sql(sql)
+fdata
+
+
+fdata = pd.DataFrame(fdata, columns=["project_id", "assigned budget"])
+fdata
+
+
+
+
+data
+fdata
+
+data
+
+pd.concat([data, fdata], axis=1, )
+
+
+
+mdata=pd.merge(left=data, right=fdata, left_on="project_id", right_on="project_id")
+mdata
+
+
+list_sum = ["sum"]+list(round(mdata[mdata.columns[1:]].sum(axis=0, numeric_only=True), 2))
+inter_mdata = pd.DataFrame([list_sum], columns = mdata.columns)
+mdata=pd.concat([mdata, inter_mdata], axis=0)
+mdata
+
+
+
+# make bar plot
+
+from dashapp.app.utilities.plot import (
+    budget_paretoplot
+)
+
+
+mdata
+mdata.columns[1:-2]
+
+cnames = mdata.columns[1:-2]
+cnames
+scnames = [str(element) for element in cnames]
+scnames
+
+fig = budget_paretoplot(list_of_names=cnames, 
+    list_of_values = mdata.loc[1,cnames], 
+    sum_value=mdata.loc[1,"assigned budget"], 
+    yname="Budget", 
+    xname="Month", 
+    title="Budget plan", 
+    plot=True)
+
+
+
+
+
+
+
+fullname = "Ralf Kulinna"
+year = 2022
+
+
+sql = f"""
+    SELECT tm.full_name, ti.year, ti.contract, ti.working_month, ti.activity, et.coverage
+    FROM team_members tm
+    INNER JOIN team_info ti
+    ON tm.team_id = ti.team_id
+    INNER JOIN entity_time et
+    ON et.entity_id = tm.legal_entity_id and ti.year = et.year
+    WHERE tm.full_name = '{fullname}'
+    AND
+    ti.year = '{year}'
+"""
+data = execute_sql(sql)
+data
+
+# WHERE typb.team_id in (SELECT team_id FROM team_members WHERE full_name = '{overview_teammember}')
+# AND
+# typb.year = '{overview_year}'
+
+
+df = pd.DataFrame(data, columns=["Fullname", "Year", "Contract", "Working Month", "Activity", "Coverage"])
+
+
+df["eff. Coverage"] = round(df["Contract"] * df["Working Month"] * df["Coverage"] * 1/100 * 1/12, 1)
+df
+
+df["eff. Coverage"][0]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

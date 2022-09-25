@@ -560,3 +560,55 @@ data = data.reset_index(drop = True)
 
 
 
+
+overview_teammember = "Heiko Kulinna"
+overview_year = 2023
+project_id = 1
+
+
+
+sql = f"""
+    SELECT typb.year, tm.full_name, typb.project_yearly_budget
+    FROM team_year_project_budget typb
+    INNER JOIN team_members tm
+    ON typb.team_id = tm.team_id
+    WHERE typb.project_id = '{project_id}'
+"""
+data=execute_sql(sql)
+
+data = pd.DataFrame(data, columns=["Year", "Team member", "Budget"])
+
+data = data.pivot(index="Team member", columns = "Year", values= "Budget")
+data =data.reset_index(drop=False)
+
+data = data.sort_values(by="Team member")
+
+inter_data = pd.DataFrame([["Sum"]+list(data[data.columns].sum(axis=0, numeric_only=True))], columns = data.columns)
+data=pd.concat([data, inter_data], axis=0)
+
+data["Sum"] = data[data.columns].sum(axis=1, numeric_only=True)
+
+data = data.reset_index(drop = True)
+data
+
+
+sql = f"""
+    SELECT typb.project_id, typb.year, tm.full_name, typb.project_yearly_budget
+    FROM team_year_project_budget typb
+    INNER JOIN team_members tm
+    ON typb.team_id = tm.team_id
+    WHERE typb.team_id in (SELECT team_id FROM team_members WHERE full_name = '{overview_teammember}')
+    AND
+    typb.year = '{overview_year}'
+"""
+data=execute_sql(sql)
+data
+
+
+data = pd.DataFrame(data, columns=["project_id", "year", "fullname", "yearly_budget"])
+data
+
+
+
+
+
