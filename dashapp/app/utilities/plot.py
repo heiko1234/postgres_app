@@ -57,7 +57,7 @@ def budget_paretoplot(list_of_names, list_of_values, sum_value, yname=None, xnam
     )
     fig.update_yaxes(
         title_text="percentage",
-        range=(0, 101),
+        range=(0, 105),
         showgrid= True,
         gridwidth=1,
         gridcolor="white", 

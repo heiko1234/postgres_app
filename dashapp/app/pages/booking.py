@@ -23,6 +23,12 @@ from app.utilities.app_utilities import (
     execute_sql
 )
 
+from app.utilities.plot import (
+    budget_paretoplot
+)
+
+
+
 dash.register_page(__name__,)
 
 # dash.register_page(
@@ -167,6 +173,16 @@ entity_budget = content_card_size(
     )
 
 
+paretro_graph = content_card_size(
+    id = "paretro_graph_content",
+    title = "Paretro Plot of Budget",
+    size = "1500px",
+    height="500px",
+    content=[
+        dcc.Loading(id="load_paretro_graphic")
+    ]
+)
+
 
 layout = html.Div(
     children=[
@@ -179,7 +195,8 @@ layout = html.Div(
             monthly_working,
             monthly_budget
         ],
-        style={"display": "flex"})
+        style={"display": "flex"}),
+        paretro_graph
     ],
     style={"display": "block"}
 )
@@ -269,7 +286,8 @@ def overview_table(overview_year, overview_teammember):
             'overflow': 'hidden',
             "minWidth": 60
             },
-        row_selectable="single",
+        # row_selectable="single",
+        row_selectable=False,
     )
 
     return df_projects
@@ -464,12 +482,13 @@ def update_project_budget_table(
         style_as_list_view=False,  #True
         editable=False,
         style_header={"fontweight": "bold", "font-family": "sans-serif"},
+        fixed_rows={'headers': True},
         style_cell={
             "font-family": "sans-serif", 
             'overflow': 'hidden',
             "minWidth": 55
             },
-        row_selectable=False,
+        row_selectable="single",
     )
 
     return df_budget_table
@@ -593,4 +612,39 @@ def update_project_budget_table(
 
 
 
+@dash.callback(
+    Output("load_paretro_graphic", "children"),
+    [
+        Input("project_monthly_budget_table", "selected_rows"),
+        Input("project_monthly_budget_table", "data")
+    ]
+    , prevent_initial_call=True
+    , suppress_callback_exceptions=True
+)
+def create_paretro_budget(selected_row, raw_data):
 
+    if selected_row != None:
+
+        cnames = ["project_id",  "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "Sum", "assigned budget"]
+
+        mdata = pd.DataFrame(data = raw_data)
+        mdata = mdata.loc[:, cnames]
+
+        scnames = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"]
+
+        selected_data = mdata.loc[selected_row, scnames]
+        selected_data = selected_data.reset_index(drop= True)
+        selected_data = list(selected_data.iloc[0,:])
+
+        fig = budget_paretoplot(list_of_names=scnames, 
+            list_of_values = selected_data, 
+            sum_value=mdata.loc[selected_row, "assigned budget"].reset_index(drop=True)[0], 
+            yname="k€ booked Budget", 
+            xname="Month", 
+            title="Budget plan", 
+            plot=False)
+
+        return dcc.Graph(figure=fig)
+    
+    else:
+        return html.H3("choose a row")
