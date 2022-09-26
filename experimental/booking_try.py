@@ -480,7 +480,7 @@ df["eff. Coverage"][0]
 
 
 
-
+import pandas as pd
 
 
 raw_data = [{'1': 10, '2': 0, '3': 0, '4': 0, '5': 15, '6': 10, '7': 5, '8': 15, '9': 0, '10': 0, '11': 0, '12': 0, 'project_id': 1}, {'1': 10, '2': 0, '3': 0, '4': 0, '5': 5, '6': 10, '7': 15, '8': 5, '9': 0, '10': 0, '11': 0, '12': 0, 'project_id': 2}]
@@ -491,6 +491,14 @@ raw_data = [{'1': 8.33, '2': 7.5, '3': 6.67, '4': 5.83, '5': 5, '6': 0, '7': 8.3
 
 data = pd.DataFrame(data=raw_data)
 data
+
+data.shape[0]
+
+
+selected_row = 1
+
+
+
 
 
 cnames = ["project_id",  "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "Sum", "assigned budget"]
@@ -503,7 +511,16 @@ mdata
 mdata.loc[:,cnames]
 
 
+scnames = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "Sum"]
+# scnames = [str(element) for element in scnames]
 
+
+selected_data = mdata.loc[selected_row, scnames]
+selected_data = selected_data.reset_index(drop= True)
+selected_data = list(selected_data)
+print(selected_data)
+
+len(selected_data)
 
 
 

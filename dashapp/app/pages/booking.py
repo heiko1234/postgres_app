@@ -140,7 +140,7 @@ monthly_working = content_card_size(
 
 monthly_budget = content_card_size(
     id="monthly_budget_content",
-    title="Monthly budget Days",
+    title="Monthly budget Bookings",
     size="1100px", 
     height="350px",
     content=[
@@ -472,6 +472,8 @@ def update_project_budget_table(
     inter_mdata = pd.DataFrame([list_sum], columns = mdata.columns)
     mdata=pd.concat([mdata, inter_mdata], axis=0)
 
+    initial_row = mdata.shape[0]-1
+
 
     # make table
     df_budget_table = dash_table.DataTable(
@@ -486,9 +488,10 @@ def update_project_budget_table(
         style_cell={
             "font-family": "sans-serif", 
             'overflow': 'hidden',
-            "minWidth": 55
+            "minWidth": 80,
             },
         row_selectable="single",
+        selected_rows=[initial_row]
     )
 
     return df_budget_table
