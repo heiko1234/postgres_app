@@ -32,6 +32,7 @@ sidebar = html.Div(
         icon_and_text(id="side_booking", text="Booking", icon="money1", href=dash.page_registry['pages.booking']['path']),
         icon_and_text(id="side_analysis", text="Analysis", icon="analysis3", href=dash.page_registry['pages.analysis']['path']),
         icon_and_text(id="side_increase", text="Benefit", icon="increase", href=dash.page_registry['pages.increase']['path']),
+        icon_and_text(id="side_costcenter", text="Costs", icon="account2", href=dash.page_registry["pages.costcenter"]["path"]),
         html.H3(""),
         html.H3(""),
         icon_and_text(id="side_construct", text="Construct", icon="construct3", href=dash.page_registry['pages.construct']['path']),

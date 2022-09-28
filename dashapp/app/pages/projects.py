@@ -1060,7 +1060,7 @@ def update_project_table(update_project_button, add_project_button, project_id_v
 
 
 
-# TODO
+
 # small_icon_card(id="projects_add_budget_button", icon="add", color="white"),
 # add yearly budget to project
 @dash.callback(
@@ -1124,7 +1124,7 @@ def projects_add_budget(
     return color
 
 
-# TODO
+
 # small_icon_card(id="projects_update_budget_button", icon="update", color="white"),
 # update yearly budget
 @dash.callback(
@@ -1181,7 +1181,7 @@ def projects_update_budget(
     return color
 
 
-# TODO
+
 # small_icon_card(id="projects_delete_budget_button", icon="delete", color="white"),
 # delete budget
 @dash.callback(
@@ -1293,10 +1293,6 @@ def update_project_budget_table(project_id, add_budget, update_budget, delete_bu
 
 
 
-
-
-
-# TODO
 # small_icon_card(id="projects_add_team_budget_button", icon="add", color="white"),
 # budget to some project team members
 @dash.callback(
