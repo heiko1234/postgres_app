@@ -8,6 +8,7 @@ import psycopg2
 def execute_sql(sql):
     #establishing the connection
     conn = psycopg2.connect(
+        # database="teams", user='postgres', password='postgres', host='127.30.0.1', port= '5432'
         database="teams", user='postgres', password='postgres', host='127.30.0.1', port= '5432'
     )
     conn.autocommit = True
@@ -106,6 +107,27 @@ data = pd.DataFrame(data, columns=["funding", "topic", "topic_class", "argus", "
 # INNER JOIN entity e
 # ON tm.legal_entity_id = e.entity_id
 # WHERE tm.full_name = '{fullname}';
+
+
+project_id = 1
+
+sql = f"""
+    SELECT fs.founding_source, p.topic, tc.topic_class, p.argus_enabled, p.way_charging, p.cost_center_respon, p.start_date, p.end_date, p.difficulty, p.project_status, p.project_description, p.project_goals
+    FROM project p
+    INNER JOIN topic_class tc
+    ON p.topic_class_id = tc.topic_class_id
+    INNER JOIN founding_sources fs
+    ON p.funding_id = fs.founding_source_id
+    WHERE p.project_id = '{project_id}';
+"""
+
+data = execute_sql(sql)
+data
+
+data = pd.DataFrame(data, columns=["funding", "topic", "topic_class", "argus", "charging", "account_resp", "start", "end", "difficulty", "status", "description", "target"])
+data 
+
+
 
 
 project_id = 1

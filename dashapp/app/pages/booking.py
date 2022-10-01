@@ -6,6 +6,7 @@ from time import sleep
 from dash import html, dcc
 from dash import dash_table
 from dash import ctx
+import plotly.express as px
 from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 
@@ -176,12 +177,23 @@ entity_budget = content_card_size(
 paretro_graph = content_card_size(
     id = "paretro_graph_content",
     title = "Paretro Plot of Budget",
-    size = "1500px",
+    size = "1300px",
     height="500px",
     content=[
         dcc.Loading(id="load_paretro_graphic")
     ]
 )
+
+budget_graph = content_card_size(
+    id = "budget_graph_content",
+    title = "Booked and Planned Budget",
+    size = "500px",
+    height="500px",
+    content=[
+        dcc.Loading(id="load_budget_graphic")
+    ]
+)
+
 
 
 layout = html.Div(
@@ -196,7 +208,11 @@ layout = html.Div(
             monthly_budget
         ],
         style={"display": "flex"}),
-        paretro_graph
+        html.Div(children=[
+            paretro_graph,
+            budget_graph
+        ],
+        style = {"display": "flex"})
     ],
     style={"display": "block"}
 )
@@ -644,10 +660,87 @@ def create_paretro_budget(selected_row, raw_data):
             sum_value=mdata.loc[selected_row, "assigned budget"].reset_index(drop=True)[0], 
             yname="k€ booked Budget", 
             xname="Month", 
-            title="Budget plan", 
+            title="Budget over time booked", 
             plot=False)
 
         return dcc.Graph(figure=fig)
     
     else:
         return html.H3("choose a row")
+
+
+
+
+
+
+@dash.callback(
+    Output("load_budget_graphic", "children"),
+    [
+        Input("project_monthly_budget_table", "data"),
+        Input("overview_year", "value"),
+        Input("overview_teammember", "value"),
+    ]
+    , prevent_initial_call=True
+    , suppress_callback_exceptions=True
+)
+def create_budget_plot(raw_data, overview_year, overview_teammember):
+
+    if raw_data != None:
+
+        cnames = ["project_id",  "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "Sum", "assigned budget"]
+
+        mdata = pd.DataFrame(data = raw_data)
+        mdata = mdata.loc[:, cnames]
+
+        # scnames = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"]
+        # selected_data = mdata.loc[selected_row, scnames]
+        # selected_data = selected_data.reset_index(drop= True)
+        # selected_data = list(selected_data.iloc[0,:])
+
+
+        sql = f"""
+            SELECT tm.full_name, ti.year, ti.contract, ti.working_month, ti.activity, et.coverage
+            FROM team_members tm
+            INNER JOIN team_info ti
+            ON tm.team_id = ti.team_id
+            INNER JOIN entity_time et
+            ON et.entity_id = tm.legal_entity_id and ti.year = et.year
+            WHERE tm.full_name = '{overview_teammember}'
+            AND
+            ti.year = '{overview_year}'
+        """
+        data = execute_sql(sql)
+        df = pd.DataFrame(data, columns=["Fullname", "Year", "Contract", "Working Month", "Activity", "Coverage"])
+        df["eff. Coverage"] = round(df["Contract"] * df["Working Month"] * df["Coverage"] * 1/100 * 1/12, 1)
+        result=df["eff. Coverage"][0]
+
+
+        df = pd.DataFrame()
+        df["Project ID"] = mdata["project_id"]
+        df["Status"] = "booked"
+        df["Budget"] = mdata["Sum"]
+        
+        new_df = pd.DataFrame([{"Project ID": "Planned", "Status": "Coverage Budget", "Budget": result}])
+
+        df = pd.concat([new_df, df], axis=0)
+        df = df.reset_index(drop=True)
+        df = df.iloc[:-1,:]
+
+        fig = px.bar(df, x="Status", y="Budget", color="Project ID", text_auto=True)
+
+
+        return dcc.Graph(figure=fig)
+    
+    else:
+        return html.H3("choose a row")
+
+
+
+
+
+
+
+
+
+
+

@@ -107,7 +107,6 @@ aproject_card = content_card_size(
                 mini_card("Topic", a_function=dcc.Input(id="new_topic", type="text", placeholder="", style={"width": "130px"})),
                 mini_card("Topic Class", a_function=dcc.Dropdown(id="new_topic_class", options=topic_class_options, style={"width": "130px"})),
                 mini_card("Argus enabled", a_function=dcc.Dropdown(id="new_argus", value="Yes", options=[{"label": "Yes", "value": "Yes"}, {"label": "No", "value": "No"}], style={"width": "130px"})),
-                mini_card("Way of charging", a_function=dcc.Dropdown(id="new_charging", value="Manual", options=[{"label": "Manual", "value": "Manual"}, {"label": "LRM", "value": "LRM"}], style={"width": "130px"})),
                 small_icon_card(id="projects_add_project", icon="add", color="white"),
                 small_icon_card(id="projects_update_project", icon="update", color="white"),
             ],
@@ -115,7 +114,7 @@ aproject_card = content_card_size(
         ),
         html.Div(
             children=[
-                mini_card("Rec. Account", a_function=dcc.Input(id="rec_account", type="text", placeholder="", style={"width": "130px"})),
+                mini_card("Way of charging", a_function=dcc.Dropdown(id="new_charging", value="Manual", options=[{"label": "Manual", "value": "Manual"}, {"label": "LRM", "value": "LRM"}], style={"width": "130px"})),
                 mini_card("Cost Center Resp.", a_function=dcc.Input(id="new_account_responsible", type="text", placeholder="", style={"width": "130px"})),
                 mini_card("Start Date", a_function=dcc.DatePickerSingle(id="new_start", style={"width": "130px"})),
                 mini_card("End Date", a_function=dcc.DatePickerSingle(id="new_end", style={"width": "130px"})),
@@ -182,6 +181,8 @@ aproject_card = content_card_size(
     ]
 )
 
+
+# mini_card("Rec. Account", a_function=dcc.Input(id="rec_account", type="text", placeholder="", style={"width": "130px"})),
 
 assigned_team = content_card_size(
     id="assign_project_content",
@@ -378,7 +379,6 @@ def update_founding(n_clicks, n_intervals):
         State("new_topic_class", "value"),
         State("new_argus", "value"),
         State("new_charging", "value"),
-        State("rec_account", "value"),
         State("new_account_responsible", "value"),
         State("new_start", "date"),
         State("new_end", "date"),
@@ -399,7 +399,6 @@ def projects_add_project(
     topic_class,
     argus,
     charging,
-    rec_account,
     account_resp,
     start,
     end,
@@ -422,7 +421,6 @@ def projects_add_project(
                 (SELECT topic_class_id FROM topic_class WHERE topic_class = '{topic_class}'),
                 '{argus}',
                 '{charging}',
-                '{rec_account}',
                 '{account_resp}',
                 '{start}',
                 '{end}',
@@ -470,7 +468,6 @@ def projects_add_project(
         Output("new_topic_class", "value"),
         Output("new_argus", "value"),
         Output("new_charging", "value"),
-        Output("rec_account", "value"),
         Output("new_account_responsible", "value"),
         Output("new_start", "date"),
         Output("new_end", "date"),
@@ -490,7 +487,7 @@ def load_project(project_id):
     if project_id != None:
 
         sql = f"""
-            SELECT fs.founding_source, p.topic, tc.topic_class, p.argus_enabled, p.way_charging, p.recieving_account, p.cost_center_respon, p.start_date, p.end_date, p.difficulty, p.project_status, p.project_description, p.project_goals
+            SELECT fs.founding_source, p.topic, tc.topic_class, p.argus_enabled, p.way_charging, p.cost_center_respon, p.start_date, p.end_date, p.difficulty, p.project_status, p.project_description, p.project_goals
             FROM project p
             INNER JOIN topic_class tc
             ON p.topic_class_id = tc.topic_class_id
@@ -501,14 +498,13 @@ def load_project(project_id):
 
         data = execute_sql(sql)
 
-        data = pd.DataFrame(data, columns=["funding", "topic", "topic_class", "argus", "charging", "rec_account", "account_resp", "start", "end", "difficulty", "status", "description", "target"])
+        data = pd.DataFrame(data, columns=["funding", "topic", "topic_class", "argus", "charging", "account_resp", "start", "end", "difficulty", "status", "description", "target"])
 
         funding = data.loc[0, "funding"]
         topic = data.loc[0, "topic"]
         topic_class = data.loc[0, "topic_class"]
         argus = data.loc[0, "argus"]
         charging = data.loc[0, "charging"]
-        rec_account = data.loc[0, "rec_account"]
         account_resp = data.loc[0, "account_resp"]
         start = data.loc[0, "start"]
         end = data.loc[0, "end"]
@@ -518,9 +514,9 @@ def load_project(project_id):
         target = data.loc[0, "target"]
     
     else:
-        funding = topic = topic_class = argus = charging = rec_account = account_resp = start = end = difficulty = status = description = target = None
+        funding = topic = topic_class = argus = charging =  account_resp = start = end = difficulty = status = description = target = None
 
-    return funding, topic, topic_class, argus, charging, rec_account, account_resp, start, end, difficulty, status, description, target
+    return funding, topic, topic_class, argus, charging, account_resp, start, end, difficulty, status, description, target
 
 
 # update_budget_year_limits

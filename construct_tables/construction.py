@@ -237,7 +237,6 @@ sql = """
                 ON UPDATE CASCADE ON DELETE CASCADE,
             argus_enabled VARCHAR(5) NOT NULL,
             way_charging VARCHAR(10) NOT NULL,
-            recieving_account VARCHAR(50),
             cost_center_respon VARCHAR(255),
             start_date DATE,
             end_date DATE,

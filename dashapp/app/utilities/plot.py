@@ -1,10 +1,10 @@
 import pandas as pd
 import numpy as np
 import plotly
+import plotly.express as px
 import plotly.graph_objs as go
 from plotly.subplots import make_subplots
-
-
+import plotly.figure_factory as ff
 
 
 def budget_paretoplot(list_of_names, list_of_values, sum_value, yname=None, xname=None, title=None, plot=True):
@@ -78,3 +78,59 @@ def budget_paretoplot(list_of_names, list_of_values, sum_value, yname=None, xnam
         plotly.offline.plot(fig, filename="paretoplot.html")
     else:
         return fig
+
+
+
+
+
+def sorted_gant(df, Task, team_member, start_date=None, end_date=None, date=None, plot = True):
+
+    df = df.sort_values(by=Task)
+    df = df.reset_index(drop = True)
+
+    Task_id_list = list(df[Task])
+    Task_id_list = np.array(Task_id_list)
+    Task_id_list = list(np.where(Task_id_list[:-1] != Task_id_list[1:])[0])
+
+
+
+    fig = ff.create_gantt(df, index_col=team_member, task_names = Task,  group_tasks=False, show_colorbar=True)
+    fig.update_yaxes(autorange="reversed")
+
+    for i in Task_id_list:
+        fig.add_hline(y = i+0.5, line_width=4, line_color="white")
+
+    if date != None:
+        fig.add_vline(x=date, line_width=3, line_color="black")
+
+    if (start_date != None) and (end_date != None):
+        fig.update_xaxes(range=[start_date, end_date])
+
+    if plot:
+        plotly.offline.plot(fig)
+    else:
+        return fig
+
+
+
+
+
+def single_gantt(df, team_member, color="Working_hours", Task="Task", Start="Start", Finish="Finish", date=None, plot = True):
+    df = df[df["Team"]==team_member]
+    df = df.reset_index(drop = True)
+
+    fig = px.timeline(df, x_start=Start, x_end=Finish, y=Task, color=color)
+    fig.update_yaxes(autorange="reversed")
+    if date != None:
+        fig.add_vline(x=date, line_width=3, line_color="black")
+    if plot:
+        plotly.offline.plot(fig)
+    else:
+        return fig
+
+
+
+
+
+
+
