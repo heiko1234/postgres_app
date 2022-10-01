@@ -33,6 +33,20 @@ def execute_sql(sql):
     return result
 
 
+
+# Create the Database teams for the following commands: 
+# CREATE DATABASE teams
+#     WITH
+#     OWNER = postgres
+#     ENCODING = 'UTF8'
+#     CONNECTION LIMIT = -1
+#     IS_TEMPLATE = False;
+
+
+
+
+
+
 # sql = "DROP DATABASE team"
 #sql = "CREATE DATABASE team"
 
@@ -358,3 +372,36 @@ execute_sql(sql)
 
 # sql = "DROP TABLE team_year_project_budget"
 # execute_sql(sql)
+
+
+sql = f"""
+    CREATE Table project_costcenter
+    (
+        pc_id SERIAL UNIQUE PRIMARY KEY,
+        project_id int REFERENCES project (project_id) ON UPDATE CASCADE ON DELETE CASCADE,
+        costcenter VARCHAR(50) NOT NULL
+    );
+"""
+
+execute_sql(sql)
+
+
+
+sql = f"""
+    CREATE Table active_project_person_costcenter
+    (
+        appc_id SERIAL UNIQUE PRIMARY KEY,
+        project_id int REFERENCES project (project_id) ON UPDATE CASCADE ON DELETE CASCADE,
+        team_id int REFERENCES team_members (team_id) ON UPDATE CASCADE ON DELETE CASCADE,
+        costcenter VARCHAR(100) NOT NULL,
+        UNIQUE (project_id, team_id)
+    );
+"""
+execute_sql(sql)
+
+
+
+
+
+
+

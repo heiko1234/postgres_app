@@ -634,3 +634,94 @@ data
 
 
 
+
+
+
+project_id = 1
+teammember = "Heiko Kulinna"
+costcenter = "DE95123456"
+
+
+# sql = f"""
+#     CREATE Table project_costcenter
+#     (
+#         pc_id SERIAL UNIQUE PRIMARY KEY,
+#         project_id int REFERENCES project (project_id) ON UPDATE CASCADE ON DELETE CASCADE,
+#         costcenter VARCHAR(50) NOT NULL
+#     );
+# """
+
+
+project_id = 1
+teammember = "Heiko Kulinna"
+costcenter = "DE95123456"
+
+
+sql = f"""
+    INSERT INTO project_costcenter(project_id, costcenter) VALUES
+    (
+        (SELECT project_id FROM project WHERE project_id = '{project_id}'),
+        '{costcenter}'
+    );
+"""
+data = execute_sql(sql)
+
+
+project_id = 2
+sql = f"""
+    SELECT project_id, costcenter FROM project_costcenter
+    WHERE 
+    project_id ='{project_id}';
+"""
+execute_sql(sql)
+
+
+project_id = None
+sql = f"""
+    DELETE FROM project_costcenter
+    WHERE 
+    project_id ='{project_id}';
+"""
+execute_sql(sql)
+
+
+
+
+# sql = f"""
+#     CREATE Table active_project_person_costcenter
+#     (
+#         appc_id SERIAL UNIQUE PRIMARY KEY,
+#         project_id int REFERENCES project (project_id) ON UPDATE CASCADE ON DELETE CASCADE,
+#         team_id int REFERENCES team_members (team_id) ON UPDATE CASCADE ON DELETE CASCADE,
+#         costcenter VARCHAR(100) NOT NULL,
+#         UNIQUE (project_id, team_id)
+#     );
+# """
+
+project_id = 1
+teammember = "Heiko Kulinna"
+costcenter = "DE95123456"
+
+
+sql = f"""
+    INSERT INTO active_project_person_costcenter (project_id, team_id, costcenter) VALUES
+    (
+        (SELECT project_id FROM project WHERE project_id = '{project_id}'),
+        (SELECT team_id FROM team_members WHERE full_name = '{teammember}')
+        '{costcenter}',
+    );
+"""
+data = execute_sql(sql)
+
+
+
+
+
+
+
+
+
+
+
+
+
