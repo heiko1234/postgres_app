@@ -707,18 +707,52 @@ sql = f"""
     INSERT INTO active_project_person_costcenter (project_id, team_id, costcenter) VALUES
     (
         (SELECT project_id FROM project WHERE project_id = '{project_id}'),
-        (SELECT team_id FROM team_members WHERE full_name = '{teammember}')
-        '{costcenter}',
+        (SELECT team_id FROM team_members WHERE full_name = '{teammember}'),
+        '{costcenter}'
     );
 """
 data = execute_sql(sql)
 
 
+sql = f"""
+    DELETE FROM active_project_person_costcenter
+    WHERE
+    project_id = '{project_id}'
+    AND
+    team_id in (SELECT team_id FROM team_members WHERE full_name = '{teammember}');
+"""
+data = execute_sql(sql)
+data
 
 
+project_id = 1
+sql = f"""
+    SELECT team_id, costcenter FROM active_project_person_costcenter
+    WHERE 
+    project_id = '{project_id}';
+"""
+data = execute_sql(sql)
+data
+
+# SELECT typb.project_id, typb.year, tm.full_name, typb.project_yearly_budget
+# FROM team_year_project_budget typb
+# INNER JOIN team_members tm
+# ON typb.team_id = tm.team_id
 
 
+sql = f"""
+    SELECT tm.full_name, appc.costcenter 
+    FROM active_project_person_costcenter appc
+    INNER JOIN team_members tm
+    ON appc.team_id = tm.team_id
+    WHERE 
+    project_id = '{project_id}';
+"""
+data = execute_sql(sql)
+data
 
+data = pd.DataFrame(data=data, columns=["team", "Cost center"])
+data
 
 
 

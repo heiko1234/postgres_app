@@ -94,7 +94,7 @@ aproject_card = content_card_size(
     id="project_content",
     title="Project",
     size="1420px", 
-    height="1300px",
+    height="1200px",
     content=[
         html.Div(
             children=[
@@ -166,7 +166,7 @@ aproject_card = content_card_size(
                     id="sub_card5",
                     title="Costcenters of Team",
                     size="400px", 
-                    height="250px",
+                    height="200px",
                     content=[
                         html.Div(dcc.Loading(id="table_team_costcenter"))
                     ]
@@ -175,7 +175,7 @@ aproject_card = content_card_size(
                     id="sub_card4",
                     title="Project Team",
                     size="650px", 
-                    height="250px",
+                    height="200px",
                     content=[
                         html.Div(dcc.Loading(id="table_team"))
                     ]
@@ -184,7 +184,7 @@ aproject_card = content_card_size(
                     id="sub_card5",
                     title="Project Budget",
                     size="400px", 
-                    height="250px",
+                    height="200px",
                     content=[
                         html.Div(dcc.Loading(id="table_yearly_budget"))
                     ]
@@ -229,7 +229,7 @@ assign_project = content_card_size(
 
 
 assigned_costcenter = content_card_size(
-    id="assign_costcenter_content",
+    id="assigned_costcenter_content",
     title="Assigned costcenters",
     size="500px", 
     height="200px",
@@ -240,7 +240,7 @@ assigned_costcenter = content_card_size(
 
 
 assign_costcenter = content_card_size(
-    id="assigned_costcenter",
+    id="assign_costcenter",
     title="Assign Costcenter to project",
     size="500px", 
     height="200px",
@@ -257,6 +257,7 @@ assign_costcenter = content_card_size(
 )
 
 
+
 assign_costcenter_project = content_card_size(
     id="assigned_costcenter_project",
     title="Assign Costcenter to Teammember",
@@ -268,8 +269,8 @@ assign_costcenter_project = content_card_size(
                 #TODO
                 mini_card("Costcenter", a_function=dcc.Dropdown(id="costcenter_dropdown", style={"width": "130px"})),
                 mini_card("Team_Member", a_function=dcc.Dropdown(id="single_teammember_dropdown", style={"width": "130px"})),
-                small_icon_card(id="projects_assign_costcenter_add_button", icon="add", color="white"),
-                small_icon_card(id="projects_assign_costcenter_delete_button", icon="delete", color="white"),
+                small_icon_card(id="projects_assignd_costcenter_update_button", icon="update", color="white"),
+                small_icon_card(id="projects_assignd_costcenter_delete_button", icon="delete", color="white"),
             ],
             style={"display": "flex"}
         ),
@@ -1056,8 +1057,6 @@ def projects_add_costcenter(
     return color
 
 
-
-
 # show up costcenter_table
 @dash.callback(
     Output("table_assigned_costcenter", "children"),
@@ -1116,7 +1115,7 @@ def update_project_costcenter_table(add_button, delete_button, project_id):
     , prevent_initial_call=True
     , suppress_callback_exceptions=True
 )
-def update_project_costcenter_table(add_button, delete_button, project_id):
+def update_costcenter_dropdown(add_button, delete_button, project_id):
 
     if (project_id != None):
 
@@ -1135,6 +1134,212 @@ def update_project_costcenter_table(add_button, delete_button, project_id):
         costcenter_list = list(data["costcenter"])
 
         return get_option_list(costcenter_list)
+
+
+
+
+# show up asigned team costcenter_table
+@dash.callback(
+    Output("table_team_costcenter", "children"),
+    [
+        Input("projects_assignd_costcenter_update_button", "n_clicks"),
+        Input("projects_assignd_costcenter_delete_button", "n_clicks"),
+        Input("new_projectid", "value"),
+    ]
+    #, prevent_initial_call=True
+    #, suppress_callback_exceptions=True
+)
+def update_team_costcenter_table(add_button, delete_button, project_id):
+
+    if (project_id != None):
+
+        sleep(1)
+
+        sql = f"""
+            SELECT tm.full_name, appc.costcenter 
+            FROM active_project_person_costcenter appc
+            INNER JOIN team_members tm
+            ON appc.team_id = tm.team_id
+            WHERE 
+            project_id = '{project_id}';
+        """
+        data = execute_sql(sql)
+        data
+
+        data = pd.DataFrame(data=data, columns=["team", "Cost center"])
+        data
+
+        if data.shape[0] != 0:
+            data = data
+
+        elif data.shape[0] == 0:
+            data = pd.DataFrame(data=None, columns=["team", "Cost center"])
+
+        df_costcenter = dash_table.DataTable(
+            id = "dashtable_team_costcenter",
+            columns=[{"name": str(i), "id": str(i)} for i in data.columns],
+            data=data.to_dict("records"),
+            style_table={"height": "150px", "overflow": "auto", "width": "300px"},
+            style_as_list_view=False,
+            style_header={"fontweight": "bold", "font-family": "sans-serif"},
+            style_cell={
+                "font-family": "sans-serif", 
+                'overflow': 'hidden',
+                "minWidth": 60
+                },
+            row_selectable=False,
+        )
+
+    else: 
+        df_costcenter = None
+
+    return df_costcenter
+
+
+
+# small_icon_card(id="projects_assignd_costcenter_update_button", icon="update", color="white"),
+# small_icon_card(id="projects_assignd_costcenter_delete_button", icon="delete", color="white"),
+
+# mini_card("Costcenter", a_function=dcc.Dropdown(id="costcenter_dropdown", style={"width": "130px"})),
+# mini_card("Team_Member", a_function=dcc.Dropdown(id="single_teammember_dropdown", style={"width": "130px"})),
+
+# update assigned costcentre to team
+@dash.callback(
+    Output("projects_assignd_costcenter_update_button_button", "style"),
+    [
+        Input("projects_assignd_costcenter_update_button", "n_clicks"),
+        Input("update_timer", "n_intervals"),
+        State("projects_assignd_costcenter_update_button_button", "style"),
+        State("new_projectid", "value"),
+        State("costcenter_dropdown", "value"),
+        State("single_teammember_dropdown", "value"),
+    ]
+    , prevent_initial_call=True
+    , suppress_callback_exceptions=True
+)
+def projects_assign_team_add(
+    n_clicks, 
+    n_interval, 
+    style,
+    project_id,
+    costcenter,
+    teammember
+    ):
+
+    button_id = ctx.triggered_id
+
+    if ((button_id == "update_timer") and (style['background-color'] == "green")):
+        color = {"background-color": "white",
+            "height": "70px", 
+            "width": "70px"}
+
+    elif (button_id == "projects_assignd_costcenter_update_button"):
+
+        if ((project_id != None) and (teammember != None)):
+
+            # delete
+
+            sql = f"""
+                DELETE FROM active_project_person_costcenter
+                WHERE
+                project_id = '{project_id}'
+                AND
+                team_id in (SELECT team_id FROM team_members WHERE full_name = '{teammember}');
+            """
+            data = execute_sql(sql)
+            data
+
+            # new insert
+
+            sql = f"""
+                INSERT INTO active_project_person_costcenter (project_id, team_id, costcenter) VALUES
+                (
+                    (SELECT project_id FROM project WHERE project_id = '{project_id}'),
+                    (SELECT team_id FROM team_members WHERE full_name = '{teammember}'),
+                    '{costcenter}'
+                );
+            """
+            data = execute_sql(sql)
+
+            color = {"background-color": "green",
+                "height": "70px", 
+                "width": "70px"}
+        
+        else: 
+            color = {"background-color": "white",
+                "height": "70px", 
+                "width": "70px"}
+
+    else: 
+        color = {"background-color": "white",
+            "height": "70px", 
+            "width": "70px"}
+
+    return color
+
+
+# delete assigned costcentre to team
+@dash.callback(
+    Output("projects_assignd_costcenter_delete_button_button", "style"),
+    [
+        Input("projects_assignd_costcenter_delete_button", "n_clicks"),
+        Input("update_timer", "n_intervals"),
+        State("projects_assignd_costcenter_delete_button_button", "style"),
+        State("new_projectid", "value"),
+        State("single_teammember_dropdown", "value"),
+    ]
+    , prevent_initial_call=True
+    , suppress_callback_exceptions=True
+)
+def projects_assign_team_add(
+    n_clicks, 
+    n_interval, 
+    style,
+    project_id,
+    teammember
+    ):
+
+    button_id = ctx.triggered_id
+
+    if ((button_id == "update_timer") and (style['background-color'] == "green")):
+        color = {"background-color": "white",
+            "height": "70px", 
+            "width": "70px"}
+
+    elif (button_id == "projects_assignd_costcenter_delete_button"):
+
+        if ((project_id != None) and (teammember != None)):
+
+            # delete
+
+            sql = f"""
+                DELETE FROM active_project_person_costcenter
+                WHERE
+                project_id = '{project_id}'
+                AND
+                team_id in (SELECT team_id FROM team_members WHERE full_name = '{teammember}');
+            """
+            data = execute_sql(sql)
+            data
+
+            # new insert
+
+            color = {"background-color": "green",
+                "height": "70px", 
+                "width": "70px"}
+        
+        else: 
+            color = {"background-color": "white",
+                "height": "70px", 
+                "width": "70px"}
+
+    else: 
+        color = {"background-color": "white",
+            "height": "70px", 
+            "width": "70px"}
+
+    return color
+
 
 
 
@@ -1196,10 +1401,6 @@ def projects_add_deadline(
             "width": "70px"}
 
     return color
-
-
-
-
 
 
 # small_icon_card(id="projects_delete_deadline_button", icon="delete", color="white"),
@@ -1605,7 +1806,7 @@ def update_project_budget_table(project_id, add_budget, update_budget, delete_bu
             id = "project_budget_table",
             columns=[{"name": str(i), "id": str(i)} for i in data.columns],
             data=data.to_dict("records"),
-            style_table={"height": "400px", "overflow": "auto", "width": "300px"},
+            style_table={"height": "150px", "overflow": "auto", "width": "300px"},
             style_as_list_view=True,
             style_header={"fontweight": "bold", "font-family": "sans-serif"},
             style_cell={
@@ -1840,7 +2041,7 @@ def update_project_budget_table(project_id, add_budget, update_budget, delete_bu
             id = "project_team_budget_table",
             columns=[{"name": str(i), "id": str(i)} for i in data.columns],
             data=data.to_dict("records"),
-            style_table={"height": "400px", "overflow": "auto", "width": "300px"},
+            style_table={"height": "150px", "overflow": "auto", "width": "500px"},
             style_as_list_view=False,
             style_header={"fontweight": "bold", "font-family": "sans-serif"},
             style_cell={
@@ -1855,4 +2056,8 @@ def update_project_budget_table(project_id, add_budget, update_budget, delete_bu
         df_budget_table = None
 
     return df_budget_table
+
+
+
+
 

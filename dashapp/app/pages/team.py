@@ -5,6 +5,7 @@ import pandas as pd
 from time import sleep
 from dash import html, dcc
 from dash import dash_table
+from dash import ctx
 from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 
@@ -31,6 +32,10 @@ dash.register_page(__name__,)
 #     title='Home Dashboard',
 #     name='Home Dashboard'
 # )
+
+
+team_timer = dcc.Interval(id ="team_timer",  interval = 10*1000)  #1000 ms * 10 = 10sec
+
 
 
 sql = """
@@ -82,7 +87,7 @@ update_team_card = content_card(
                 mini_card("Legal Entity", a_function=dcc.Dropdown(id="u_entity", options=entity_options, style={"width": "130px"})),
                 mini_card("Start Date", a_function=dcc.DatePickerSingle(id="u_contract_year", style={"width": "130px"})),
                 small_icon_card(id="update_new", icon="update", color="white"),
-                small_icon_card(id="delete", icon="delete_user", color="white")
+                small_icon_card(id="delete_user", icon="delete_user", color="white")
             ],
             style={"display": "flex"}
         ),
@@ -152,7 +157,8 @@ layout = html.Div(
         team_card,
         update_team_card,
         manage_team_card,
-        table_card
+        table_card,
+        team_timer
     ],
     style={"display": "block"}
 )
@@ -165,9 +171,12 @@ layout = html.Div(
     [
         Output("i_entity", "value"),
         Output("o_fullname", "children"),
+        Output("save_new_button", "style"),
     ],
     [
-        Input("save_new_button", "n_clicks"),
+        Input("save_new", "n_clicks"),
+        Input("team_timer", "n_intervals"),
+        State("save_new_button", "style"),
         State("i_name", "value"),
         State("i_surname", "value"),
         State("i_id", "value"),
@@ -176,26 +185,53 @@ layout = html.Div(
     ]
     # ,prevent_initial_call=True
 )
-def new_entity(n_clicks, name, surename, id, mail, entity):
+def new_entity(n_clicks, intervals, style, name, surename, id, mail, entity):
 
-    if ((name != None) and (surename != None)):
+    button_id = ctx.triggered_id
 
-        fullname = str(name)+" "+ str(surename)
+    if (button_id == "save_new"):
 
-        sql = f"""
-            INSERT INTO team_members (pre_name, sur_name, full_name, user_id, email, legal_entity_id) VALUES 
-            ('{name}', '{surename}', '{fullname}', '{id}', '{mail}', (SELECT entity_id FROM entity WHERE entity_name = '{entity}'));
-        """
+        if ((name != None) and (surename != None)):
 
-        data = execute_sql(sql)
+            fullname = str(name)+" "+ str(surename)
 
-        entity_value = entity
+            sql = f"""
+                INSERT INTO team_members (pre_name, sur_name, full_name, user_id, email, legal_entity_id) VALUES 
+                ('{name}', '{surename}', '{fullname}', '{id}', '{mail}', (SELECT entity_id FROM entity WHERE entity_name = '{entity}'));
+            """
 
-    else: 
+            data = execute_sql(sql)
+
+            entity_value = entity
+            color = {"background-color": "green",
+                "height": "70px", 
+                "width": "70px"}
+
+        else: 
+            fullname = None
+            entity_value = None
+
+            color = {"background-color": "white",
+                "height": "70px", 
+                "width": "70px"}
+
+
+    elif ((button_id == "update_timer") and (style['background-color'] == "green")):
+
         fullname = None
         entity_value = None
+        color = {"background-color": "white",
+            "height": "70px", 
+            "width": "70px"}
 
-    return entity_value, html.H4(fullname)
+    else:
+        fullname = None
+        entity_value = None
+        color = {"background-color": "white",
+            "height": "70px", 
+            "width": "70px"}
+
+    return entity_value, html.H4(fullname), color
 
 
 
@@ -206,10 +242,14 @@ def new_entity(n_clicks, name, surename, id, mail, entity):
     Output("m_fullname", "options"),
     ],
     [
-        Input("save_new_button", "n_clicks"),
+        Input("save_new", "n_clicks"),
+        Input("update_new", "n_clicks"),
+        Input("delete_user", "n_clicks"),
     ]
 )
-def update_dropdown(n_clicks):
+def update_dropdown(n_clicks, new_user, delete_user):
+
+    sleep(1)
 
     sql = """
         SELECT full_name FROM team_members
@@ -229,25 +269,42 @@ def update_dropdown(n_clicks):
 
 @dash.callback(
 
-    Output("delete", "style"),
+    Output("delete_user_button", "style"),
     [
-        Input("delete_button", "n_clicks"),
+        Input("delete_user", "n_clicks"),
+        Input("team_timer", "n_intervals"),
+        State("delete_user_button", "style"),
         State("u_fullname", "value"),
     ]
     ,prevent_initial_call=True
 )
-def delete_person(n_clicks, u_fullname):
+def delete_person(n_clicks, intervals, style, u_fullname):
 
-    color = {"background-color": "white"}
+    button_id = ctx.triggered_id
 
-    sql = f"""
-            DELETE from team_members 
-            WHERE
-            full_name  = '{u_fullname}';
-    """
+    if (button_id == "delete_user"):
 
-    data=execute_sql(sql = sql)
-    data
+        sql = f"""
+                DELETE from team_members 
+                WHERE
+                full_name  = '{u_fullname}';
+        """
+
+        data=execute_sql(sql = sql)
+        data
+        color = {"background-color": "green",
+            "height": "70px", 
+            "width": "70px"}
+    
+    elif ((button_id == "team_timer") and (style['background-color'] == "green")):
+        color = {"background-color": "white",
+            "height": "70px", 
+            "width": "70px"}
+
+    else:
+        color = {"background-color": "white",
+            "height": "70px", 
+            "width": "70px"}
 
     return color
 
@@ -256,9 +313,11 @@ def delete_person(n_clicks, u_fullname):
 
 @dash.callback(
 
-    Output("update_new", "style"),
+    Output("update_new_button", "style"),
     [
-        Input("update_new_button", "n_clicks"),
+        Input("update_new", "n_clicks"),
+        Input("team_timer", "n_intervals"),
+        State("update_new_button", "style"),
         State("u_fullname", "value"),
         State("u_name", "value"),
         State("u_surname", "value"),
@@ -269,13 +328,15 @@ def delete_person(n_clicks, u_fullname):
     ]
     ,prevent_initial_call=True
 )
-def update_person(n_clicks, old_fullname, new_name, new_surname, new_user_id, new_email, new_legal_entity, new_entry_date):
+def update_person(n_clicks, intervals, style, old_fullname, new_name, new_surname, new_user_id, new_email, new_legal_entity, new_entry_date):
 
-    color = {"background-color": "white"}
+    button_id = ctx.triggered_id
 
-    new_fullname = new_name+" "+new_surname
+    if (button_id == "update_new"):
 
-    sql=f"""
+        new_fullname = new_name+" "+new_surname
+
+        sql=f"""
             UPDATE team_members
             SET 
             pre_name = '{new_name}',
@@ -286,11 +347,24 @@ def update_person(n_clicks, old_fullname, new_name, new_surname, new_user_id, ne
             legal_entity_id = (SELECT entity_id FROM entity WHERE entity_name = '{new_legal_entity}'),
             department_entry_date = '{new_entry_date}'
             WHERE team_id in (SELECT team_id FROM team_members WHERE full_name = '{old_fullname}');
-    """
+        """
 
+        data = execute_sql(sql)
+        data
 
-    data = execute_sql(sql)
-    data
+        color = {"background-color": "green",
+            "height": "70px", 
+            "width": "70px"}
+
+    elif ((button_id == "team_timer") and (style['background-color'] == "green")):
+        color = {"background-color": "white",
+            "height": "70px", 
+            "width": "70px"}
+
+    else:
+        color = {"background-color": "white",
+            "height": "70px", 
+            "width": "70px"}
 
     return color
 

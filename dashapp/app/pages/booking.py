@@ -516,7 +516,7 @@ def update_project_budget_table(
 
 @dash.callback(
 
-    Output("update_project_budget_button", "style"),
+    Output("update_project_budget_button_button", "style"),
     [
         Input("update_project_budget_button", "n_clicks"),
         Input("booking_timer", "n_intervals"),
