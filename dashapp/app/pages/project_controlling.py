@@ -300,3 +300,29 @@ def update_controlling_missing_table(year, month):
     return table_controling
 
 
+# download table
+
+@dash.callback(
+    Output("download-dataframe-xlsx", "data"),
+    [
+        Input("button_xlsx", "n_clicks"),
+        State("controling_table", "data"),
+        State("controling_year", "value"),
+        State("controling_month", "value"),
+    ]
+    , prevent_initial_call=True
+    # , suppress_callback_exceptions=True
+)
+def make_table_download(n_clicks, data, year, month):
+
+    df = pd.DataFrame(data=data)
+
+    name_string = f"{year}_{month}"
+
+    return dcc.send_data_frame(df.to_excel, "controling.xlsx", sheet_name=name_string)
+
+
+
+
+
+

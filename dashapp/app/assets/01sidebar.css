@@ -16,7 +16,7 @@
 
 /* when the user hovers on the sidebar, expand it */
 .sidebar:hover {
-width: 12rem;
+width: 14rem;
 }
 
 /* make sure the contents of the navlink don't wrap when navbar collapses */

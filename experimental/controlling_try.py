@@ -68,7 +68,7 @@ sql = f"""
     );
 """
 
-
+overview_teammember="Heiko Kulinna"
 sql=f"""
     SELECT p.project_id, p.topic, tc.topic_class, fs.founding_source, p.project_description
     FROM project p
