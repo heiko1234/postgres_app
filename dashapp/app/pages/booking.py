@@ -49,28 +49,28 @@ booking_timer = dcc.Interval(id ="booking_timer",  interval = 4*1000)  #1000 ms 
 this_year=datetime.datetime.today().year
 
 
-# teammembers: fullname Dropdown
-sql = """
-    SELECT full_name FROM team_members
-"""
-data = execute_sql(sql)
-data=pd.DataFrame(data, columns=["full_name"])
-list_data=list(data["full_name"])
-list_data.sort()
-team_members_options = get_option_list(list_data)
+# # teammembers: fullname Dropdown
+# sql = """
+#     SELECT full_name FROM team_members
+# """
+# data = execute_sql(sql)
+# data=pd.DataFrame(data, columns=["full_name"])
+# list_data=list(data["full_name"])
+# list_data.sort()
+# team_members_options = get_option_list(list_data)
 
 
 
-# years dropdown
-sql = f"""
-    SELECT YEAR FROM project_budget_planning
-"""
+# # years dropdown
+# sql = f"""
+#     SELECT YEAR FROM project_budget_planning
+# """
 
-data = execute_sql(sql)
-data=pd.DataFrame(data, columns=["Year"])
-list_data = list(set(data["Year"]))
-list_data.sort()
-years_options = get_option_list(list_data)
+# data = execute_sql(sql)
+# data=pd.DataFrame(data, columns=["Year"])
+# list_data = list(set(data["Year"]))
+# list_data.sort()
+# years_options = get_option_list(list_data)
 
 
 table_card = content_card_size(
@@ -85,14 +85,11 @@ table_card = content_card_size(
                     mini_card("Year", 
                         a_function=dcc.Dropdown(
                             id="overview_year",
-                            options=years_options,
-                            value=this_year 
                             )
                         ),
                     mini_card("Team Member", 
                         a_function=dcc.Dropdown(
-                            id="overview_teammember", 
-                            options=team_members_options
+                            id="overview_teammember"
                             )
                         ),
                     # small_icon_card(id="add_button", icon="add", color="white"),
@@ -216,6 +213,48 @@ layout = html.Div(
     ],
     style={"display": "block"}
 )
+
+
+
+@dash.callback(
+    [
+        Output("overview_year", "options"),
+        Output("overview_teammember", "options"),
+    ],
+    [
+        Input("update_project_budget_button", "n_clicks"),
+    ]
+    # ,prevent_initial_call=True
+    , suppress_callback_exceptions=True
+)
+def update_dropdown_options(clicks):
+
+    # teammembers: fullname Dropdown
+    sql = """
+        SELECT full_name FROM team_members
+    """
+    data = execute_sql(sql)
+    data=pd.DataFrame(data, columns=["full_name"])
+    list_data=list(data["full_name"])
+    list_data.sort()
+    team_members_options = get_option_list(list_data)
+
+    # this_year_value=this_year 
+
+    # years dropdown
+    sql = f"""
+        SELECT YEAR FROM project_budget_planning
+    """
+
+    data = execute_sql(sql)
+    data=pd.DataFrame(data, columns=["Year"])
+    list_data = list(set(data["Year"]))
+    list_data.sort()
+    years_options = get_option_list(list_data)
+
+    return years_options, team_members_options
+
+
 
 
 
@@ -433,7 +472,7 @@ def update_project_work_table(
         Input("update_project_budget_button", "n_clicks"),
     ]
     , prevent_initial_call=True
-    , suppress_callback_exceptions=True
+    # , suppress_callback_exceptions=True
 )
 def update_project_budget_table(
     overview_year, 

@@ -11,10 +11,7 @@ a_session_store = dcc.Store(
     id = "a_session_store", storage_type="session"
 )
 
-
 app = Dash(__name__, use_pages=True)
-
-
 
 sidebar = html.Div(
     [
@@ -38,11 +35,9 @@ sidebar = html.Div(
         icon_and_text(id="side_costcenter", text="Costs", icon="account2", href=dash.page_registry["pages.costcenter"]["path"]),
         dcc.Markdown("\n---\n"),
         icon_and_text(id="side_increase", text="Benefit", icon="increase", href=dash.page_registry['pages.increase']['path']),
-
     ],
     className="sidebar"
 )
-
 
 app.layout = html.Div(
     [

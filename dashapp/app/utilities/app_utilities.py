@@ -22,7 +22,11 @@ def get_option_list(a_list):
 def execute_sql(sql):
     #establishing the connection
     conn = psycopg2.connect(
-        database="teams", user='postgres', password='postgres', host='127.30.0.1', port= '5432'
+        database="teams",
+        user='postgres',
+        password='postgres',
+        host='127.30.0.1',
+        port= '5432'
     )
     conn.autocommit = True
 

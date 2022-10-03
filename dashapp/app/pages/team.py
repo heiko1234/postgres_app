@@ -38,14 +38,14 @@ team_timer = dcc.Interval(id ="team_timer",  interval = 10*1000)  #1000 ms * 10 
 
 
 
-sql = """
-    SELECT entity_name FROM entity
-"""
-data = execute_sql(sql)
-data=pd.DataFrame(data, columns=["Entity"])
-list_data=list(data["Entity"])
-list_data.sort()
-entity_options = get_option_list(list_data)
+# sql = """
+#     SELECT entity_name FROM entity
+# """
+# data = execute_sql(sql)
+# data=pd.DataFrame(data, columns=["Entity"])
+# list_data=list(data["Entity"])
+# list_data.sort()
+# entity_options = get_option_list(list_data)
 
 
 # what is this year when loading
@@ -64,8 +64,9 @@ team_card = content_card(
                 mini_card("Full Name", a_function=html.Div(id="o_fullname", style={"width": "130px"})),
                 mini_card("UserID", a_function=dcc.Input(id="i_id", type="text", placeholder="", style={"width": "130px"})),
                 mini_card("Email", a_function=dcc.Input(id="i_mail", type="email", placeholder="", style={"width": "130px"})),
-                mini_card("Legal Entity", a_function=dcc.Dropdown(id="i_entity", options=entity_options, style={"width": "130px"})),
-                small_icon_card(id="save_new", icon="add-user", color="white")
+                mini_card("Legal Entity", a_function=dcc.Dropdown(id="i_entity", style={"width": "130px"})),
+                small_icon_card(id="save_new", icon="add-user", color="white"),
+                small_icon_card(id="update_save", icon="update", color="white"),
             ],
             style={"display": "flex"}
         ),
@@ -84,7 +85,7 @@ update_team_card = content_card(
                 mini_card("Surname", a_function=dcc.Input(id="u_surname", type="text", style={"width": "130px"})),
                 mini_card("UserID", a_function=dcc.Input(id="u_id", type="text", style={"width": "130px"})),
                 mini_card("Email", a_function=dcc.Input(id="u_mail", type="email", style={"width": "130px"})),
-                mini_card("Legal Entity", a_function=dcc.Dropdown(id="u_entity", options=entity_options, style={"width": "130px"})),
+                mini_card("Legal Entity", a_function=dcc.Dropdown(id="u_entity", style={"width": "130px"})),
                 mini_card("Start Date", a_function=dcc.DatePickerSingle(id="u_contract_year", style={"width": "130px"})),
                 small_icon_card(id="update_new", icon="update", color="white"),
                 small_icon_card(id="delete_user", icon="delete_user", color="white")
@@ -185,7 +186,7 @@ layout = html.Div(
     ]
     # ,prevent_initial_call=True
 )
-def new_entity(n_clicks, intervals, style, name, surename, id, mail, entity):
+def new_employee(n_clicks, intervals, style, name, surename, id, mail, entity):
 
     button_id = ctx.triggered_id
 
@@ -232,6 +233,32 @@ def new_entity(n_clicks, intervals, style, name, surename, id, mail, entity):
             "width": "70px"}
 
     return entity_value, html.H4(fullname), color
+
+
+
+@dash.callback(
+    [
+        Output("i_entity", "options"),
+        Output("u_entity", "options")
+    ],
+    [
+        Input("update_save", "n_clicks"),
+        Input("update_new", "n_clicks")
+    ]
+)
+def update_entity_dropdown(update, new):
+
+    sql = """
+        SELECT entity_name FROM entity
+    """
+    data = execute_sql(sql)
+    data=pd.DataFrame(data, columns=["Entity"])
+    list_data=list(data["Entity"])
+    list_data.sort()
+    entity_options = get_option_list(list_data)
+
+    return entity_options, entity_options
+
 
 
 
@@ -402,6 +429,7 @@ def update_dropdown(fullname):
         data=pd.DataFrame(data, columns=["pre_name", "sur_name", "full_name", "email", "user_id", "leagal_entity", "entry_date"])
         data = data.reset_index(drop = True)
 
+
         u_name = data.loc[0, "pre_name"]
         u_surname = data.loc[0, "sur_name"]
         u_id = data.loc[0, "user_id"]
@@ -521,11 +549,12 @@ def call_datatable(dd_team, n_clicks_update):
 
 
 
-
 @dash.callback(
-    Output("update_m", "style"),
+    Output("update_m_button", "style"),
     [
-        Input("update_m_button", "n_clicks"),
+        Input("update_m", "n_clicks"),
+        Input("team_timer", "n_intervals"),
+        State("update_m_button", "style"),
         State("m_fullname", "value"),
         State("m_year", "value"),
         State("m_contract", "value"),
@@ -534,32 +563,48 @@ def call_datatable(dd_team, n_clicks_update):
     ]
     ,prevent_initial_call=True
 )
-def new_entity(n_clicks, fullname, year, contract, working_month, activity):
+def new_entity(n_clicks, timer, style, fullname, year, contract, working_month, activity):
 
-    color = {"background-color": "white"}
+    button_id = ctx.triggered_id
 
-    sql = f"""
-            DELETE from team_info 
-            WHERE
-            team_id in (SELECT team_id FROM team_members WHERE full_name = '{fullname}')
-            AND
-            team_info.year = '{int(year)}';
-    """
-    data=execute_sql(sql = sql)
+    if (button_id == "update_m"):
+
+        sql = f"""
+                DELETE from team_info 
+                WHERE
+                team_id in (SELECT team_id FROM team_members WHERE full_name = '{fullname}')
+                AND
+                team_info.year = '{int(year)}';
+        """
+        data=execute_sql(sql = sql)
 
 
-    sql = f"""
-        INSERT INTO team_info (team_id, year, contract, working_month, entity_id, activity) VALUES 
-        (
-            (SELECT team_id FROM team_members WHERE full_name = '{fullname}'),
-            '{int(year)}',
-            '{int(contract)}',
-            '{int(working_month)}',
-            (SELECT legal_entity_id FROM team_members WHERE full_name = '{fullname}'),
-            '{activity}'
-        );
-    """
-    data=execute_sql(sql = sql)
+        sql = f"""
+            INSERT INTO team_info (team_id, year, contract, working_month, entity_id, activity) VALUES 
+            (
+                (SELECT team_id FROM team_members WHERE full_name = '{fullname}'),
+                '{int(year)}',
+                '{int(contract)}',
+                '{int(working_month)}',
+                (SELECT legal_entity_id FROM team_members WHERE full_name = '{fullname}'),
+                '{activity}'
+            );
+        """
+        data=execute_sql(sql = sql)
+
+        color = {"background-color": "green",
+            "height": "70px", 
+            "width": "70px"}
+
+    elif ((button_id == "update_m") and (style['background-color'] == "green")):
+        color = {"background-color": "white",
+            "height": "70px", 
+            "width": "70px"}
+
+    else:
+        color = {"background-color": "white",
+            "height": "70px", 
+            "width": "70px"}
 
     return color
 

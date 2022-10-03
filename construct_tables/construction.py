@@ -43,10 +43,6 @@ def execute_sql(sql):
 #     IS_TEMPLATE = False;
 
 
-
-
-
-
 # sql = "DROP DATABASE team"
 #sql = "CREATE DATABASE team"
 
@@ -261,16 +257,19 @@ sql = """
         )
 """
 
-#             project_od INTEGER NOT NULL,
-#             FOREIGN KEY (project_od)
-#                 REFERENCES ods (od_id)
-#                 ON UPDATE CASCADE ON DELETE CASCADE,
+execute_sql(sql)
+
+
+
+# project_od INTEGER NOT NULL,
+# FOREIGN KEY (project_od)
+#     REFERENCES ods (od_id)
+#     ON UPDATE CASCADE ON DELETE CASCADE,
 
 
 # sql = "DROP TABLE project"
 # execute_sql(sql)
-
-execute_sql(sql)
+# execute_sql(sql)
 
 
 
