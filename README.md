@@ -162,6 +162,9 @@ https://dash.plotly.com/datatable
 
 
 ## POSTGRES
+
+https://www.postgresqltutorial.com/postgresql-python/connect/
+
 https://dba.stackexchange.com/questions/46410/how-do-i-insert-a-row-which-contains-a-foreign-key
 
 

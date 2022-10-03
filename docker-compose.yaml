@@ -1,0 +1,53 @@
+# https://developer-blog.net/postgresql-docker-container-erstellen/
+
+########################################################
+# creates postgres sql database image and pgadmin4 image
+# login db: postgres:postgres hostname: postgres
+# login pgadmin: admin@gmx.de:admin port 5555
+########################################################
+
+version: '3'
+services:
+
+  # postgres:
+  #   image: postgres
+  #   container_name: postgres
+  #   hostname: postgres
+  #   restart: always
+  # # if you need to connect from outside, comment this in:
+  #   ports:
+  #     - 5432:5432
+  #   environment:
+  #     POSTGRES_USER: postgres
+  #     POSTGRES_PASSWORD: postgres
+  #     POSTGRES_DB: teams
+  #   volumes:
+  #     - postgres-storage:/var/lib/postgresql/data
+  #   networks:
+  #     - general_nw
+
+
+  pgadmin:
+    image: dpage/pgadmin4
+    # depends_on:
+    #   - postgres
+    ports:
+      - 5555:80
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@gmx.de
+      PGADMIN_DEFAULT_PASSWORD: admin
+    restart: unless-stopped
+    networks:
+      - general_nw
+
+
+# volumes:
+#   postgres-data:
+#     # driver: local
+
+
+networks:
+  general_nw:
+    driver: bridge
+
+
