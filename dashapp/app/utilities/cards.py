@@ -53,6 +53,18 @@ def content_card_size(
     return card
 
 
+def main_hex_card_size(
+    id,
+    content
+):
+    card = html.Div(
+        id=id,
+        className="main_hex_card",
+        children=[html.H3(""), *content],
+    )
+    return card
+
+
 def mini_card(text, a_function):
     output = html.Div(
         className="mini_card_class",

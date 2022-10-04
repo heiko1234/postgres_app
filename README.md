@@ -170,3 +170,12 @@ https://dba.stackexchange.com/questions/46410/how-do-i-insert-a-row-which-contai
 
 
 
+## hexagon
+
+https://blog.avada.io/css/hexagons
+
+https://css-tricks.com/hexagons-and-beyond-flexible-responsive-grid-patterns-sans-media-queries/
+
+
+
+
