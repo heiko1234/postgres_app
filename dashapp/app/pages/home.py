@@ -39,16 +39,14 @@ dash.register_page(__name__,)
 
 initial_hex = hexagon_card(
     id="hex_test",
-    # icon = "update",
+    icon = "update",
     text = "Test",
-    subtext="Any Subtext"
 )
 
 hex2 = hexagon_card(
     id="hex_test2",
-    # icon = "update",
-    text = "    Test2",
-    subtext="    Any Subtext2"
+    icon = "flask",
+    text = "Grosser String",
 )
 
 

@@ -24,33 +24,70 @@
     width: var(--s);
     margin: var(--m);
     height: calc(var(--s) * 1.1547);
-    display: inline-block;
+    display: grid;
+    place-content: center;
     font-size:initial;
     clip-path: polygon(0% 25%, 0% 75%, 50% 100%, 100% 75%, 100% 25%, 50% 0%);
     background: grey;
     margin-bottom: calc(var(--m) - var(--s) * 0.2885);
 }
 
-.hexa h1, .hexa p {
+
+.hexa_content {
     width: 95%;
-    padding: 5%;
+    height: 95%;
     box-sizing:border-box;
+    text-align:center;
+    place-content: center;
     font-weight: 300;
     opacity: 0;
+}
+
+/* .hexa_content_playground{
+    width: 95%;
+    height: 95%;
+    box-sizing:border-box;
     text-align:center;
+    place-content: center;
+    font-weight: 300;
+    opacity: 1;
+} */
+
+.hexa_content img{
+    /* position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0; */
+    /* background-position: center center;
+    background-size: cover; */
+    content: center ;
+    /* overflow: hidden;
+    -webkit-clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%); */
+    opacity: 1;
 }
 
 .hexa::before {
     content: "";
     width: calc(var(--s) / 2 + var(--m));
-    float: left;
     height: 120%; 
     shape-outside: repeating-linear-gradient(#0000 0 calc(var(--f) - 3px), #000 0 var(--f));
 }
 
 
-.hexa:hover h1,
-.hexa:hover p {
+.hexa_content:hover,
+.hexa_content:hover {
     opacity: 1;
 }
 
+/* .hexa_content img:hover,
+.hexa_content img:hover {
+    opacity: 0;
+} */
+
+
+/* .hexa:hover h1,
+.hexa:hover p {
+    opacity: 1;
+} */

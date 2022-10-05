@@ -49,29 +49,6 @@ booking_timer = dcc.Interval(id ="booking_timer",  interval = 4*1000)  #1000 ms 
 this_year=datetime.datetime.today().year
 
 
-# # teammembers: fullname Dropdown
-# sql = """
-#     SELECT full_name FROM team_members
-# """
-# data = execute_sql(sql)
-# data=pd.DataFrame(data, columns=["full_name"])
-# list_data=list(data["full_name"])
-# list_data.sort()
-# team_members_options = get_option_list(list_data)
-
-
-
-# # years dropdown
-# sql = f"""
-#     SELECT YEAR FROM project_budget_planning
-# """
-
-# data = execute_sql(sql)
-# data=pd.DataFrame(data, columns=["Year"])
-# list_data = list(set(data["Year"]))
-# list_data.sort()
-# years_options = get_option_list(list_data)
-
 
 table_card = content_card_size(
     id="table_card_projects_overview_content",
@@ -85,6 +62,7 @@ table_card = content_card_size(
                     mini_card("Year", 
                         a_function=dcc.Dropdown(
                             id="overview_year",
+                            value=this_year
                             )
                         ),
                     mini_card("Team Member", 
@@ -304,7 +282,10 @@ def show_eff_coverage(overview_year, overview_teammember):
     # ,prevent_initial_call=True
     , suppress_callback_exceptions=True
 )
-def overview_table(overview_year, overview_teammember):
+def overview_table(
+        overview_year, 
+        overview_teammember
+    ):
 
     sql=f"""
         SELECT p.project_id, p.topic, tc.topic_class, fs.founding_source, p.project_description
@@ -706,9 +687,6 @@ def create_paretro_budget(selected_row, raw_data):
     
     else:
         return html.H3("choose a row")
-
-
-
 
 
 

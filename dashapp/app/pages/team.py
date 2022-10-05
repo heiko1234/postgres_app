@@ -66,7 +66,7 @@ team_card = content_card(
                 mini_card("Email", a_function=dcc.Input(id="i_mail", type="email", placeholder="", style={"width": "130px"})),
                 mini_card("Legal Entity", a_function=dcc.Dropdown(id="i_entity", style={"width": "130px"})),
                 small_icon_card(id="save_new", icon="add-user", color="white"),
-                small_icon_card(id="update_save", icon="update", color="white"),
+                # small_icon_card(id="update_save", icon="update", color="white"),
             ],
             style={"display": "flex"}
         ),
@@ -242,7 +242,7 @@ def new_employee(n_clicks, intervals, style, name, surename, id, mail, entity):
         Output("u_entity", "options")
     ],
     [
-        Input("update_save", "n_clicks"),
+        Input("save_new", "n_clicks"),
         Input("update_new", "n_clicks")
     ]
 )

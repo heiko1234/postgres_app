@@ -7,20 +7,30 @@ import base64
 
 def hexagon_card(
     id,
-    #icon,
+    icon,
     text,
-    subtext
 ):
-    # if icon != None:
-    #     img_path = str(f"./dashapp/app/assets/{icon}.png")
-    #     encoded_img = base64.b64encode(open(img_path, "rb").read())
+    if icon != None:
+        img_path = str(f"./dashapp/app/assets/{icon}.png")
+        encoded_img = base64.b64encode(open(img_path, "rb").read())
 
     output = html.Div(
         className="hexa", 
         id = id,
         children=[
-            html.H1(text),
-            html.P(subtext)
+            html.Div(
+                className="hexa_content",
+                children=[
+                    # html.H1(text),
+                    html.Img(
+                        id=id+str("_img"), src='data:image/png;base64,{}'.format(encoded_img.decode()),
+                        style={
+                            "height": "150px", 
+                            "width": "150px", 
+                            }
+                    ),
+                ]
+            )
         ]
     )
 

@@ -279,9 +279,6 @@ assign_costcenter_project = content_card_size(
 
 
 
-
-
-
 add_deadline = content_card_size(
     id="deadline_project_content",
     title="Add a deadline",
@@ -354,6 +351,7 @@ table_card = content_card_size(
                     mini_card("Year", 
                         a_function=dcc.Dropdown(
                             id="projects_year", 
+                            value=this_year
                             )
                         ),
                     mini_card("Team Member", 
@@ -385,7 +383,7 @@ callback_timer = dcc.Interval(id ="update_timer",  interval = 4*1000)  #1000 ms 
 
 layout = html.Div(
     children=[
-
+        table_card,
         aproject_card,
         html.Div(
             children=[
@@ -410,7 +408,7 @@ layout = html.Div(
             style={"display": "flex"}
         ),
         assign_yearly_budget_team,
-        table_card,
+
         callback_timer
     ],
     style={"display": "block"}
@@ -442,7 +440,7 @@ def update_founding(n_clicks, n_intervals):
 
 
 
-# teammember option list
+# teammember option list: single_teammember
 @dash.callback(
     Output("single_teammember", "options"),
     [
@@ -465,7 +463,7 @@ def create_team_members_options(project_id, n_clicks, n_intervals):
     return team_members_options
 
 
-# teammember option list
+# teammember option list: single_teammember_dropdown
 @dash.callback(
     [
         Output("yearly_single_teammember", "options"),
@@ -499,6 +497,65 @@ def create_team_members_options(project_id, n_clicks, n_intervals):
 
     return  active_team_members_options, active_team_members_options
 
+
+# project_drop down lists: team & year
+@dash.callback(
+    [
+        Output("projects_year", "options"),
+        Output("projects_teammember", "options"),
+    ],
+    [
+        Input("projects_add_project", "n_clicks"),
+    ]
+    # ,prevent_initial_call=True
+    , suppress_callback_exceptions=True
+)
+def update_dropdown_options(clicks):
+
+    # teammembers: fullname Dropdown
+    sql = """
+        SELECT full_name FROM team_members
+    """
+    data = execute_sql(sql)
+    data=pd.DataFrame(data, columns=["full_name"])
+    list_data=list(data["full_name"])
+    list_data.sort()
+    team_members_options = get_option_list(list_data)
+
+    # years dropdown
+    sql = f"""
+        SELECT YEAR FROM project_budget_planning
+    """
+
+    data = execute_sql(sql)
+    data=pd.DataFrame(data, columns=["Year"])
+    list_data = list(set(data["Year"]))
+    list_data.sort()
+    years_options = get_option_list(list_data)
+
+    return years_options, team_members_options
+
+
+
+@dash.callback(
+    Output("new_projectid", "value"),
+    [
+        Input("projects_table", "selected_rows"),
+        Input("projects_table", "data")
+    ]
+)
+def get_projectid_from_projectstable(selected_row, raw_data):
+
+    mdata = pd.DataFrame(data = raw_data)
+
+    scnames=["project_id", "Topic", "Topic_Class", "Founding Source", "Project Desc.", "Year"]
+
+    selected_data = mdata.loc[selected_row, scnames]
+    selected_data = selected_data.reset_index(drop= True)
+
+    project_id = selected_data.loc[0, "project_id"]
+
+    return project_id
 
 
 
@@ -1551,26 +1608,59 @@ def select_deadline_table(selected_row, raw_data, projectid):
     [
         Input("projects_update_project", "n_clicks"),
         Input("projects_add_project", "n_clicks"),
-        Input("new_projectid", "value")
+        Input("projects_year", "value"),
+        Input("projects_teammember", "value"),
     ]
-    , prevent_initial_call=True
+    # , prevent_initial_call=True
     , suppress_callback_exceptions=True
 )
-def update_project_table(update_project_button, add_project_button, project_id_value):
+def update_project_table(update_project_button, add_project_button, year, teammember):
 
-    sql="""
-        SELECT p.project_id, p.topic, tc.topic_class, fs.founding_source, p.project_description
-        FROM project p
-        INNER JOIN founding_sources fs
-        ON p.funding_id = fs.founding_source_id
-        INNER JOIN topic_class tc
-        ON p.topic_class_id = tc.topic_class_id
-    """
+    if teammember != None:
+        sql=f"""
+            SELECT p.project_id, p.topic, tc.topic_class, fs.founding_source, p.project_description, pbp.year
+            FROM project p
+            INNER JOIN founding_sources fs
+            ON p.funding_id = fs.founding_source_id
+            INNER JOIN topic_class tc
+            ON p.topic_class_id = tc.topic_class_id
+            INNER JOIN project_team_members ptm
+            ON p.project_id = ptm.project_id
+            INNER JOIN team_members tm
+            ON tm.team_id = ptm.team_id
+            INNER JOIN project_budget_planning pbp
+            ON pbp.project_id = p.project_id
+            WHERE pbp.year = '{year}'
+            AND
+            tm.team_id in (SELECT team_id FROM team_members WHERE full_name = '{teammember}')
+        """
+
+
+    else:
+        sql=f"""
+            SELECT p.project_id, p.topic, tc.topic_class, fs.founding_source, p.project_description, pbp.year
+            FROM project p
+            INNER JOIN founding_sources fs
+            ON p.funding_id = fs.founding_source_id
+            INNER JOIN topic_class tc
+            ON p.topic_class_id = tc.topic_class_id
+            INNER JOIN project_team_members ptm
+            ON p.project_id = ptm.project_id
+            INNER JOIN team_members tm
+            ON tm.team_id = ptm.team_id
+            INNER JOIN project_budget_planning pbp
+            ON pbp.project_id = p.project_id
+            WHERE pbp.year = '{year}'
+        """
     data=execute_sql(sql)
 
-    data = pd.DataFrame(data, columns=["project_id", "Topic", "Topic_Class", "Founding Source", "Project Desc."])
+    data = pd.DataFrame(data, columns=["project_id", "Topic", "Topic_Class", "Founding Source", "Project Desc.", "Year"])
 
     data = data.sort_values(by="project_id")
+
+    data = data.drop_duplicates(keep="first")
+
+    data = data.reset_index(drop=True)
 
     df_projects = dash_table.DataTable(
         id = "projects_table",

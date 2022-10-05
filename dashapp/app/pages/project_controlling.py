@@ -190,7 +190,7 @@ def update_controlling_table(year, month, status_list, aggregation):
     if ((year != None) and (month != None)):
 
         sql = f"""
-            SELECT ptb.year, ptb.month, ptb.team_id, ptb.project_id, p.topic, p.project_status, ptb.working_booking, tm.full_name, appc.costcenter
+            SELECT ptb.year, ptb.month, ptb.project_id, p.topic, p.project_status, ptb.working_booking, tm.full_name, e.entity_name, appc.costcenter
             FROM project_time_budget ptb
             INNER JOIN team_members tm
             ON tm.team_id = ptb.team_id
@@ -198,6 +198,8 @@ def update_controlling_table(year, month, status_list, aggregation):
             ON appc.project_id = ptb.project_id AND appc.team_id = ptb.team_id
             INNER JOIN project p
             ON p.project_id = appc.project_id
+            INNER JOIN entity e
+            ON tm.legal_entity_id = e.entity_id
             WHERE 
             ptb.year = '{year}' 
             AND
@@ -208,16 +210,19 @@ def update_controlling_table(year, month, status_list, aggregation):
         data
 
 
-        data = pd.DataFrame(data, columns=["year", "month", "team_id", "project_id", "topic", "status", "working_booking", "fullname", "Costcenter"])
-        data
+        data = pd.DataFrame(data, columns=["year", "month", "project_id", "topic", "status", "costs", "fullname", "entity", "Costcenter"])
+
 
         if len(status_list) != 0:
             data = data[data["status"].isin(status_list)]
 
         if aggregation:
-            data = data.loc[:,["year", "month", "project_id", "topic", "working_booking", "Costcenter"]]
+            data = data.loc[:,["year", "month", "project_id", "topic", "costs", "entity", "Costcenter"]]
 
-            data.groupby(["year", "month", 'Costcenter', "project_id", "topic"]).sum()
+            data = data.groupby(["year", "month", "project_id", "topic", "entity", 'Costcenter']).sum()
+
+            data = data.reset_index(drop=False)
+            data
 
 
         table_controling = dash_table.DataTable(
