@@ -26,8 +26,8 @@ from app.utilities.hex_cards import (
 )
 
 
+dash.register_page(__name__, path='/')
 
-dash.register_page(__name__,)
 
 # dash.register_page(
 #     __name__,
@@ -37,17 +37,60 @@ dash.register_page(__name__,)
 # )
 
 
-initial_hex = hexagon_card(
-    id="hex_test",
-    icon = "update",
-    text = "Test",
+hex_team = hexagon_card(
+    id="hex_team",
+    icon = "user",
+    text = "Team",
+    href="team"
 )
 
-hex2 = hexagon_card(
-    id="hex_test2",
-    icon = "flask",
-    text = "Grosser String",
+hex_idea = hexagon_card(
+    id="hex_idea",
+    icon = "idea",
+    text = "Project",
+    href="projects"
 )
+
+hex_booking = hexagon_card(
+    id="hex_booking",
+    icon = "money1",
+    text = "Booking",
+    href="booking"
+)
+
+hex_analyis = hexagon_card(
+    id="hex_analysis",
+    icon = "account",
+    text = "Analysis",
+    href="analysis"
+)
+
+hex_controlling = hexagon_card(
+    id="hex_controlling",
+    icon = "analysis6",
+    text = "Controling",
+    href="project-controlling"
+)
+
+hex_construct = hexagon_card(
+    id="hex_construct",
+    icon = "construct3",
+    text = "Controling",
+    href="construct"
+)
+hex_cost = hexagon_card(
+    id="hex_cost",
+    icon = "account2",
+    text = "Costs",
+    href="costcenter"
+)
+hex_benefit = hexagon_card(
+    id="hex_benefit",
+    icon = "increase",
+    text = "Benefit",
+    href="increase"
+)
+
 
 
 layout = html.Div(
@@ -56,12 +99,22 @@ layout = html.Div(
             id="hex_body",
             content=
                 [
-                    initial_hex,
-                    hex2
+                    hex_team,
+                    hex_idea,
+                    hex_booking,
+                    hex_analyis,
+                    hex_controlling,
+                    hex_construct,
+                    hex_cost,
+                    hex_benefit
                 ]
         )
     ],
-    style={"display": "block"}
+    # style={
+    #     "display": "block",
+    #     "width": "600px",
+    #     "height": "800px",
+    #     }
 )
 
 

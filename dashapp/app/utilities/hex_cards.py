@@ -1,5 +1,7 @@
 
 
+# https://codepen.io/adamriguez/embed/eRaXeq?height=316&theme-id=0&default-tab=result
+
 from pydoc import classname
 from dash import html, dcc
 import base64
@@ -9,10 +11,11 @@ def hexagon_card(
     id,
     icon,
     text,
+    href
 ):
-    if icon != None:
-        img_path = str(f"./dashapp/app/assets/{icon}.png")
-        encoded_img = base64.b64encode(open(img_path, "rb").read())
+    # if icon != None:
+    #     img_path = str(f"./dashapp/app/assets/{icon}.png")
+    #     encoded_img = base64.b64encode(open(img_path, "rb").read())
 
     output = html.Div(
         className="hexa", 
@@ -21,44 +24,20 @@ def hexagon_card(
             html.Div(
                 className="hexa_content",
                 children=[
-                    # html.H1(text),
-                    html.Img(
-                        id=id+str("_img"), src='data:image/png;base64,{}'.format(encoded_img.decode()),
-                        style={
-                            "height": "150px", 
-                            "width": "150px", 
-                            }
-                    ),
-                ]
-            )
-        ]
+                    dcc.Link(children=[
+                        html.H1(text, id = "hexa_content_h1")
+                        ],
+                        style={"color": "white"},
+                        href=href)
+                    ]
+                )
+            ],
+            style={
+                "background-image": f"url('./assets/{icon}.png')",
+                "background-position": "center",
+                "background-repeat": "no-repeat",
+                "background-size": "150px",
+                }
     )
-
-
-    # output = html.Li(
-    #             className="hex",
-    #             children=[
-    #                 # html.A(
-    #                 #     className="hexLink"
-    #                 # ),
-    #                 html.Div(
-    #                     className="img",
-    #                     style={"background-image": encoded_img}
-    #                 ),
-    #                 html.Div(
-    #                     className="hexIn",
-    #                     children=[
-    #                         html.A(
-    #                             className="hexLink",
-    #                             children=[
-    #                                 html.H1(text),
-    #                                 html.H1(""),
-    #                                 html.P(subtext)
-    #                             ]
-    #                         )
-    #                     ]
-    #                 )
-    #     ]
-    # )
 
     return output

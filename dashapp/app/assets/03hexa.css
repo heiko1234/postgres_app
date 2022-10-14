@@ -5,18 +5,24 @@
 
 
 .main_hex_card{
-    background: rgb(123, 158, 158);
+    /* background: rgb(123, 158, 158); */
     display:flex;
-    --s: 200px;  /* size  */
-    --m: 8px;    /* margin */
+    flex-wrap: wrap;
+    /* overflow: hidden; */
+    list-style-type: none;
+    margin: 0 auto;
+    /* width: 1200px; */
+    /* height: 400px; */
+    --s: 250px;  /* size 200px  */ 
+    --m: 10px;    /* margin 8px*/
     --f: calc(var(--s) * 1.732 + 4 * var(--m) - 1px); 
 }
 
 
-
-.hex {
+.hex_body {
     font-size: 0;   /* disable white space between inline block element */
-} 
+}
+
 
 
 
@@ -28,10 +34,17 @@
     place-content: center;
     font-size:initial;
     clip-path: polygon(0% 25%, 0% 75%, 50% 100%, 100% 75%, 100% 25%, 50% 0%);
-    background: grey;
+    background: #1d0287;
     margin-bottom: calc(var(--m) - var(--s) * 0.2885);
 }
 
+.main_hex_card::before {
+    content: "";
+    width: calc(var(--s) / 2 + var(--m));
+    float: left;
+    height: 100%; 
+    shape-outside: repeating-linear-gradient(#0000 0 calc(var(--f) - 3px), #000 0 var(--f));
+}
 
 .hexa_content {
     width: 95%;
@@ -43,51 +56,19 @@
     opacity: 0;
 }
 
-/* .hexa_content_playground{
-    width: 95%;
-    height: 95%;
-    box-sizing:border-box;
-    text-align:center;
-    place-content: center;
-    font-weight: 300;
-    opacity: 1;
-} */
 
-.hexa_content img{
-    /* position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0; */
-    /* background-position: center center;
-    background-size: cover; */
-    content: center ;
-    /* overflow: hidden;
-    -webkit-clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%); */
-    opacity: 1;
+.hexa_content_h1 {
+    opacity: 0;
 }
 
-.hexa::before {
-    content: "";
-    width: calc(var(--s) / 2 + var(--m));
-    height: 120%; 
-    shape-outside: repeating-linear-gradient(#0000 0 calc(var(--f) - 3px), #000 0 var(--f));
+.hexa:hover {
+    opacity: 0.5;
 }
 
-
-.hexa_content:hover,
 .hexa_content:hover {
     opacity: 1;
+    transition: 0.3s;
 }
 
-/* .hexa_content img:hover,
-.hexa_content img:hover {
-    opacity: 0;
-} */
 
 
-/* .hexa:hover h1,
-.hexa:hover p {
-    opacity: 1;
-} */
