@@ -227,7 +227,10 @@ def update_founding(year):
     df
     df = df[df["Year"] == year]
     df
-    dc = df["Coverage"].sum()  #580
+
+    df["eff. Coverage"] = round(df["Contract"] * df["Working Month"] * df["Coverage"] * 1/100 * 1/12,1)
+    # dc = df["Coverage"].sum()  #580
+    dc = df["eff. Coverage"].sum()
 
     fig = go.Figure(go.Waterfall(
         name = "Project Waterfall", orientation="v",

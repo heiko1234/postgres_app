@@ -8,7 +8,6 @@
     /* background: rgb(123, 158, 158); */
     display:flex;
     flex-wrap: wrap;
-    /* overflow: hidden; */
     list-style-type: none;
     margin: 0 auto;
     /* width: 1200px; */
@@ -19,11 +18,18 @@
 }
 
 
-.hex_body {
-    font-size: 0;   /* disable white space between inline block element */
+.main_hex_card::before {
+    content: "";
+    width: calc(var(--s) / 2 + var(--m));
+    float: left;
+    height: 100%; 
+    shape-outside: repeating-linear-gradient(#0000 0 calc(var(--f) - 3px), #000 0 var(--f));
 }
 
 
+.hex_body {
+    font-size: 0;   /* disable white space between inline block element */
+}
 
 
 .hexa{
@@ -38,13 +44,6 @@
     margin-bottom: calc(var(--m) - var(--s) * 0.2885);
 }
 
-.main_hex_card::before {
-    content: "";
-    width: calc(var(--s) / 2 + var(--m));
-    float: left;
-    height: 100%; 
-    shape-outside: repeating-linear-gradient(#0000 0 calc(var(--f) - 3px), #000 0 var(--f));
-}
 
 .hexa_content {
     width: 95%;
@@ -61,9 +60,11 @@
     opacity: 0;
 }
 
+
 .hexa:hover {
     opacity: 0.5;
 }
+
 
 .hexa_content:hover {
     opacity: 1;
