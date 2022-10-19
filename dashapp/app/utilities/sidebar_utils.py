@@ -2,7 +2,8 @@
 
 from dash import html, dcc
 import base64
-
+import os
+from dotenv import load_dotenv
 
 
 def icon_and_text(
@@ -11,7 +12,12 @@ def icon_and_text(
     icon,
     href
 ):
-    img_path = str(f"./dashapp/app/assets/{icon}.png")
+    load_dotenv()
+    local_run = os.getenv("LOCAL_RUN", False)
+    if local_run:
+        img_path = str(f"./dashapp/app/assets/{icon}.png")
+    else:
+        img_path = str(f"./app/assets/{icon}.png")
     encoded_img = base64.b64encode(open(img_path, "rb").read())
 
     output = dcc.Link(

@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-local_run = os.getenv("LOCAL_RUN")
+local_run = os.getenv("LOCAL_RUN", False)
 local_run
 
 
@@ -108,6 +108,8 @@ def icon_card(
     icon,
     color="white"
 ):
+    load_dotenv()
+    local_run = os.getenv("LOCAL_RUN", False)
     if local_run:
         img_path = str(f"./dashapp/app/assets/{icon}.png")
     else:
@@ -156,6 +158,8 @@ def small_icon_card(
     icon,
     color="white"
 ):
+    load_dotenv()
+    local_run = os.getenv("LOCAL_RUN", False)
     if local_run:
         img_path = str(f"./dashapp/app/assets/{icon}.png")
     else:
@@ -196,6 +200,8 @@ def icon_action_card(
     icon,
     color="white"
 ):
+    load_dotenv()
+    local_run = os.getenv("LOCAL_RUN", False)
     if local_run:
         img_path = str(f"./dashapp/app/assets/{icon}.png")
     else:

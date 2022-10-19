@@ -28,7 +28,6 @@ def get_option_list(a_list):
 
 def execute_sql(sql):
     load_dotenv()
-
     local_run = os.getenv("LOCAL_RUN", False)
     if local_run:
     #establishing the connection
@@ -44,7 +43,7 @@ def execute_sql(sql):
             database="teams",
             user='postgres',
             password='postgres',
-            host='0.0.0.0',
+            host= "192.168.48.4",  #'0.0.0.0',   #192.168.48.4
             port= '5432'
         )
         # conn = psycopg2.connect(
