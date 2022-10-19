@@ -125,6 +125,31 @@ poetry install
 ```
 
 
+## How to start and work with docker
+
+The best way to work with docker and to start 
+
+```bash
+
+# go to dashapp folder with    cd ./dashapp/     and run these commands
+
+docker build -t dash_app:latest .
+
+# docker run --name dash_app_test -d dash_app
+
+docker run -itd --network=general_nw --name dash_app_test -d dash_app
+
+docker stop dash_app_test
+
+docker rm dash_app_test
+
+
+```
+
+
+
+
+
 # Current Status of the project
 
 Frontend is not dockered yet. In this repo is no docker container yet. I will add it in the next days when i'm happy with the frontend. Maybe a docker compose for postgres, pgadmin and the frontend :)

@@ -1,0 +1,60 @@
+
+ARG PYTHON_VERSION=3.8
+# FROM python:$(PYTHON_VERSION) AS foundation
+# FROM python:3.8-slim-buster
+FROM python:${PYTHON_VERSION}-slim-buster
+
+
+RUN apt-get update && \
+    apt-get install -y build-essential curl wget cmake && \
+    apt-get clean
+    
+# RUN run -rf /var/lib/apt/lists/*
+
+RUN python -m pip install --upgrade pip
+
+
+RUN mkdir -p /dashapp/
+
+COPY app/ /dashapp/app/
+COPY index.py /dashapp/
+
+# docker structure:
+# ./dashapp/app/
+# ./dashapp/index.py
+# ./dashapp/app/postgres_app.py
+# ./dashapp/app/folders
+
+# ./dashapp/dashapp does not contain any element
+
+
+COPY pyproject.toml /dashapp/
+COPY poetry.toml /dashapp/
+COPY poetry.lock /dashapp/
+COPY app/__init__.py /dashapp/
+
+
+RUN pip install poetry wheel
+
+
+WORKDIR /dashapp/
+
+
+# RUN pip install poetry toml
+RUN poetry install --only main
+
+
+ENV PATH=.venv/bin:$PATH
+
+RUN python -m pip install --upgrade pip
+RUN pip install gunicorn
+
+
+WORKDIR /dashapp/
+
+# # could be executed via helm values ;)
+
+EXPOSE 8050
+
+CMD ["gunicorn", "-w", "1", "-b", "0.0.0.0:8050", "index:server"]
+

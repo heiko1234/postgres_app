@@ -5,9 +5,16 @@
 # User: Heikokulinna@gmx.de
 # PW: admin
 
-
+import os
 import psycopg2
 
+
+from dotenv import load_dotenv
+
+load_dotenv()
+
+local_run = os.getenv("LOCAL_RUN")
+local_run
 
 
 def get_option_list(a_list):
@@ -20,14 +27,33 @@ def get_option_list(a_list):
 
 
 def execute_sql(sql):
+    load_dotenv()
+
+    local_run = os.getenv("LOCAL_RUN", False)
+    if local_run:
     #establishing the connection
-    conn = psycopg2.connect(
-        database="teams",
-        user='postgres',
-        password='postgres',
-        host='127.30.0.1',
-        port= '5432'
-    )
+        conn = psycopg2.connect(
+            database="teams",
+            user='postgres',
+            password='postgres',
+            host='127.30.0.1',
+            port= '5432'
+        )
+    else:
+        conn = psycopg2.connect(
+            database="teams",
+            user='postgres',
+            password='postgres',
+            host='0.0.0.0',
+            port= '5432'
+        )
+        # conn = psycopg2.connect(
+        #     database=os.getenv("POSTGRES_DATABASE"),
+        #     user=os.getenv("POSTGRES_USER"),
+        #     password=os.getenv("POSTGRES_PASSWORD"),
+        #     host=os.getenv("POSTGRES_HOST"),
+        #     port=os.getenv("POSTGRES_PORT")
+        # )
     conn.autocommit = True
 
     #Creating a cursor object using the cursor() method

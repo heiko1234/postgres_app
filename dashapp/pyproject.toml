@@ -1,0 +1,36 @@
+
+[tool.poetry]
+name = "dash-app-postgres"
+version = "0.1.0"
+description = ""
+authors = ["Heiko Kulinna <Heikokulinna@gmx.de>"]
+
+# packages = [{include = "app"}]
+
+# best way to update
+# poetry update --lock -vvv
+
+
+[tool.poetry.dependencies]
+python = "^3.8, <3.9"
+pandas = "^1.4.4"
+numpy = "^1.23.3"
+dash = "^2.6.1"
+dash-core-components = "^2.0.0"
+dash-html-components = "^2.0.0"
+python-dotenv = "^0.21.0"
+psycopg2-binary = "^2.9.3"
+plotly = "^5.10.0"
+dash-daq = "^0.5.0"
+openpyxl = "^3.0.10"
+
+
+[tool.poetry.group.dev.dependencies]
+black = "^22.8.0"
+flake8 = "^5.0.4"
+isort = "^5.10.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

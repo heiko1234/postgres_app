@@ -6,12 +6,23 @@ from app.utilities.sidebar_utils import (
 )
 
 
+from flask import Flask
+
+server = Flask(__name__)
+
 # session store
 a_session_store = dcc.Store(
     id = "a_session_store", storage_type="session"
 )
 
-app = Dash(__name__, use_pages=True)
+app = Dash(
+    __name__, 
+    server = server,
+    url_base_pathname="/dashapp/",
+    use_pages=True
+    )
+
+app.title = "Project Database"
 
 sidebar = html.Div(
     [
