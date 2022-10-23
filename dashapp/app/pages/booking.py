@@ -461,7 +461,7 @@ def update_project_budget_table(
     update_clicks
     ):
 
-    sleep(0.5)
+    sleep(1)
 
     sql = f"""
         SELECT project_id, month, working_days, working_booking FROM project_time_budget
@@ -485,6 +485,8 @@ def update_project_budget_table(
     data["Sum"] = round(data[data.columns[1:]].sum(axis=1, numeric_only=True),2)
 
     data = data.reset_index(drop = True)
+
+    sleep(0.15)
 
 
     # merge with assigned budget
