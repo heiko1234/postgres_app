@@ -232,11 +232,13 @@ def update_founding(year):
     # dc = df["Coverage"].sum()  #580
     dc = df["eff. Coverage"].sum()
 
+    earnings = ao+ap+ac-dc
+
     fig = go.Figure(go.Waterfall(
         name = "Project Waterfall", orientation="v",
-        x = ["Approved", "Ongoing", "Completed", "Total Available", "Needed"],
-        y = [ad, ao, ac, 0, -dc],
-        measure = ["relative", "relative", "relative", "total", "relative"],
+        x = ["Approved", "Ongoing", "Completed", "Total Available", "Labor Costs", "Earnings"],
+        y = [ad, ao, ac, 0, -dc, earnings],
+        measure = ["relative", "relative", "relative", "total", "relative", "total"],
         connector = {"line":{"color":"rgb(63, 63, 63)"}},
     ))
 
