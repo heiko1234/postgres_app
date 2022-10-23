@@ -1,6 +1,6 @@
 # postgres_app
 
-![app_video](./assets/postgres_project_dashapp_mp4.mp4)
+
 
 
 ## App Design
