@@ -81,9 +81,22 @@ def budget_paretoplot(list_of_names, list_of_values, sum_value, yname=None, xnam
 
 
 
+def sorted_gant(df, Task, team_member, start_date=None, end_date=None, date=None, colorscale="turbo", plot = True):
+    """ sortd gantt charts split tasks and color by team_members
 
+    Args:
+        df (_type_): pandas DataFrame, with "Task", team_member, Start and Finish date, 
+        Task (_type_): splitted Tasks, gets 
+        team_member (_type_): _description_
+        start_date (_type_, optional): name of Startdate
+        end_date (_type_, optional): Finish, name of Enddate of Task
+        date (_type_, optional): datetime of today
+        colorscale (str, optional): plotly colorscale, eg. bluered, turbo, rainbow (https://plotly.com/python/builtin-colorscales/)
+        plot (bool, optional): _description_. True / False
 
-def sorted_gant(df, Task, team_member, start_date=None, end_date=None, date=None, plot = True):
+    Returns:
+        _type_: _description_
+    """
 
     df = df.sort_values(by=Task)
     df = df.reset_index(drop = True)
@@ -93,8 +106,12 @@ def sorted_gant(df, Task, team_member, start_date=None, end_date=None, date=None
     Task_id_list = list(np.where(Task_id_list[:-1] != Task_id_list[1:])[0])
 
 
+    n_colors = len(df[team_member].unique())
+    colors = px.colors.sample_colorscale(colorscale, [n/(n_colors -1) for n in range(n_colors)])
 
-    fig = ff.create_gantt(df, index_col=team_member, task_names = Task,  group_tasks=False, show_colorbar=True)
+    colormap = {s:c for s,c in zip(df[team_member].unique(), colors)}
+
+    fig = ff.create_gantt(df, index_col=team_member, task_names = Task, colors=colormap, group_tasks=False, show_colorbar=True)
     fig.update_yaxes(autorange="reversed")
 
     for i in Task_id_list:
@@ -113,11 +130,7 @@ def sorted_gant(df, Task, team_member, start_date=None, end_date=None, date=None
 
 
 
-
-
 def single_gantt(df, team_member, color="Working_hours", Task="Task", Start="Start", Finish="Finish", date=None, plot = True):
-    df = df[df["Team"]==team_member]
-    df = df.reset_index(drop = True)
 
     fig = px.timeline(df, x_start=Start, x_end=Finish, y=Task, color=color)
     fig.update_yaxes(autorange="reversed")

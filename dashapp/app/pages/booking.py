@@ -288,7 +288,7 @@ def overview_table(
     ):
 
     sql=f"""
-        SELECT p.project_id, p.topic, tc.topic_class, fs.founding_source, p.project_description
+        SELECT p.project_id, p.topic, tc.topic_class, fs.founding_source
         FROM project p
         INNER JOIN founding_sources fs
         ON p.funding_id = fs.founding_source_id
@@ -306,7 +306,7 @@ def overview_table(
     """
     data=execute_sql(sql)
 
-    data = pd.DataFrame(data, columns=["project_id", "Topic", "Topic_Class", "Founding Source", "Project Desc."])
+    data = pd.DataFrame(data, columns=["project_id", "Topic", "Topic_Class", "Founding Source"])
 
     data = data.sort_values(by="project_id")
 
@@ -314,8 +314,8 @@ def overview_table(
         id = "overview_project_table",
         columns=[{"name": str(i), "id": str(i)} for i in data.columns],
         data=data.to_dict("records"),
-        style_table={"height": "300px", "overflow": "auto", "width": "1300px"},
-        style_as_list_view=True,
+        style_table={"height": "150px", "overflow": "auto", "width": "1400px"},
+        style_as_list_view=False,
         style_header={"fontweight": "bold", "font-family": "sans-serif"},
         style_cell={
             "font-family": "sans-serif", 
@@ -348,7 +348,7 @@ def update_project_work_table(
 
 
     sql=f"""
-        SELECT p.project_id, p.topic, tc.topic_class, fs.founding_source, p.project_description
+        SELECT p.project_id, p.topic, tc.topic_class, fs.founding_source
         FROM project p
         INNER JOIN founding_sources fs
         ON p.funding_id = fs.founding_source_id
@@ -365,7 +365,7 @@ def update_project_work_table(
         tm.team_id in (SELECT team_id FROM team_members WHERE full_name = '{overview_teammember}')
     """
     data=execute_sql(sql)
-    data = pd.DataFrame(data, columns=["project_id", "topic", "topic_class", "founding_source", "project_descrition"])
+    data = pd.DataFrame(data, columns=["project_id", "topic", "topic_class", "founding_source"])
 
 
     list_ids = list(set(data["project_id"]))
@@ -429,7 +429,7 @@ def update_project_work_table(
         id = "project_monthly_work_table",
         columns=[{"name": str(i), "id": str(i)} for i in data.columns],
         data=data.to_dict("records"),
-        style_table={"height": "300px", "overflow": "auto", "width": "850px"},
+        style_table={"height": "200px", "overflow": "auto", "width": "850px"},
         style_as_list_view=False,  #True
         editable=True,
         style_header={"fontweight": "bold", "font-family": "sans-serif"},
@@ -461,7 +461,7 @@ def update_project_budget_table(
     update_clicks
     ):
 
-    sleep(0.9)
+    sleep(0.5)
 
     sql = f"""
         SELECT project_id, month, working_days, working_booking FROM project_time_budget
@@ -516,7 +516,7 @@ def update_project_budget_table(
         id = "project_monthly_budget_table",
         columns=[{"name": str(i), "id": str(i)} for i in mdata.columns],
         data=mdata.to_dict("records"),
-        style_table={"height": "300px", "overflow": "auto", "width": "1000px"},
+        style_table={"height": "200px", "overflow": "auto", "width": "1000px"},
         style_as_list_view=False,  #True
         editable=False,
         style_header={"fontweight": "bold", "font-family": "sans-serif"},

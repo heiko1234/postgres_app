@@ -24,6 +24,11 @@ from app.utilities.app_utilities import (
     execute_sql
 )
 
+from app.utilities.plot import (
+    sorted_gant,
+    single_gantt
+)
+
 
 dash.register_page(__name__,)
 
@@ -377,6 +382,19 @@ table_card = content_card_size(
 )
 
 
+gant_card = content_card_size(
+    id="gant_card_projects_content",
+    title="Project Timeline",
+    size="1500px", 
+    height="480px",
+    content=[
+        html.Div(
+            [dcc.Loading(id="fig_project_timeline")]
+        )
+    ]
+)
+
+
 callback_timer = dcc.Interval(id ="update_timer",  interval = 4*1000)  #1000 ms * 4 = 4sec
 
 
@@ -384,6 +402,7 @@ callback_timer = dcc.Interval(id ="update_timer",  interval = 4*1000)  #1000 ms 
 layout = html.Div(
     children=[
         table_card,
+        gant_card,
         aproject_card,
         html.Div(
             children=[
@@ -498,6 +517,82 @@ def create_team_members_options(project_id, n_clicks, n_intervals):
     return  active_team_members_options, active_team_members_options
 
 
+# figure callback
+@dash.callback(
+    Output("fig_project_timeline", "children"),
+    [
+        Input("projects_year", "value"),
+        Input("projects_teammember", "value"),
+        Input("projects_assign_team_add_button", "n_clicks"),
+        Input("projects_assign_team_delete_button", "n_clicks"),
+    ]
+)
+def create_gant_fig(year, teammember, add_button, delete_button):
+
+    low_year = f"{str(int(year))}"+"-01-01"
+    upper_year = f"{str(int(year)+1)}"+"-01-01"
+
+    if teammember != None:
+
+        sql = f"""
+                SELECT p.project_id, tm.full_name, p.start_date, p.end_date, p.topic, tc.topic_class
+                FROM project p
+                INNER JOIN founding_sources fs
+                ON p.funding_id = fs.founding_source_id
+                INNER JOIN topic_class tc
+                ON p.topic_class_id = tc.topic_class_id
+                INNER JOIN project_team_members ptm
+                ON p.project_id = ptm.project_id
+                INNER JOIN team_members tm
+                ON tm.team_id = ptm.team_id
+                WHERE
+                p.end_date > '{low_year}'
+                AND
+                p.start_date < '{upper_year}'
+                AND
+                tm.full_name = '{teammember}'
+        """
+
+    else:
+        sql = f"""
+                SELECT p.project_id, tm.full_name, p.start_date, p.end_date, p.topic, tc.topic_class
+                FROM project p
+                INNER JOIN founding_sources fs
+                ON p.funding_id = fs.founding_source_id
+                INNER JOIN topic_class tc
+                ON p.topic_class_id = tc.topic_class_id
+                INNER JOIN project_team_members ptm
+                ON p.project_id = ptm.project_id
+                INNER JOIN team_members tm
+                ON tm.team_id = ptm.team_id
+                WHERE
+                p.end_date > '{low_year}'
+                AND
+                p.start_date < '{upper_year}'
+        """
+
+    data = execute_sql(sql=sql)
+
+    data = pd.DataFrame(data=data, columns = ["project_id", "fullname", "Start", "Finish", "Task", "Topic"])
+
+
+    if teammember != None:
+        data = data[data["fullname"] == teammember]
+
+    data = data.sort_values(by="project_id", ascending=False)
+    data = data.reset_index(drop = True)
+
+    # sorted_gant(df=data, Task="project_id", team_member="Task", start_date="Start", end_date="Finish", date=None, plot = True)
+    # fig = sorted_gant(df=data, Task="Task", team_member="Task", start_date="Start", end_date="Finish", date=None, plot = False)
+
+    fig = single_gantt(df=data, team_member=teammember, color="Task", Task="Task", Start="Start", Finish="Finish", date=None, plot = False)
+
+    return dcc.Graph(figure=fig)
+
+
+
+
+
 # project_drop down lists: team & year
 @dash.callback(
     [
@@ -548,7 +643,7 @@ def get_projectid_from_projectstable(selected_row, raw_data):
 
     mdata = pd.DataFrame(data = raw_data)
 
-    scnames=["project_id", "Topic", "Topic_Class", "Founding Source", "Project Desc.", "Year"]
+    scnames=["project_id", "Topic", "Topic_Class", "Founding Source", "Year"]
 
     selected_data = mdata.loc[selected_row, scnames]
     selected_data = selected_data.reset_index(drop= True)
@@ -647,7 +742,7 @@ def projects_add_project(
 
     data=pd.DataFrame(data, columns=["project_id"])
     list_data=list(data["project_id"])
-    list_data.sort()
+    list_data.sort(reverse=True)
     project_options = get_option_list(list_data)
 
     # new_index = list(data["project_id"])[-1]
@@ -1176,7 +1271,7 @@ def update_costcenter_dropdown(add_button, delete_button, project_id):
 
     if (project_id != None):
 
-        sleep(1)
+        sleep(0.5)
 
         sql = f"""
             SELECT costcenter FROM project_costcenter
@@ -1610,15 +1705,17 @@ def select_deadline_table(selected_row, raw_data, projectid):
         Input("projects_add_project", "n_clicks"),
         Input("projects_year", "value"),
         Input("projects_teammember", "value"),
+        Input("projects_assign_team_add_button", "n_clicks"),
+        Input("projects_assign_team_delete_button", "n_clicks")
     ]
     # , prevent_initial_call=True
     , suppress_callback_exceptions=True
 )
-def update_project_table(update_project_button, add_project_button, year, teammember):
+def update_project_table(update_project_button, add_project_button, year, teammember, add_buttton, delete_button):
 
     if teammember != None:
         sql=f"""
-            SELECT p.project_id, p.topic, tc.topic_class, fs.founding_source, p.project_description, pbp.year
+            SELECT p.project_id, p.topic, tc.topic_class, fs.founding_source, pbp.year
             FROM project p
             INNER JOIN founding_sources fs
             ON p.funding_id = fs.founding_source_id
@@ -1638,7 +1735,7 @@ def update_project_table(update_project_button, add_project_button, year, teamme
 
     else:
         sql=f"""
-            SELECT p.project_id, p.topic, tc.topic_class, fs.founding_source, p.project_description, pbp.year
+            SELECT p.project_id, p.topic, tc.topic_class, fs.founding_source, pbp.year
             FROM project p
             INNER JOIN founding_sources fs
             ON p.funding_id = fs.founding_source_id
@@ -1654,7 +1751,7 @@ def update_project_table(update_project_button, add_project_button, year, teamme
         """
     data=execute_sql(sql)
 
-    data = pd.DataFrame(data, columns=["project_id", "Topic", "Topic_Class", "Founding Source", "Project Desc.", "Year"])
+    data = pd.DataFrame(data, columns=["project_id", "Topic", "Topic_Class", "Founding Source", "Year"])
 
     data = data.sort_values(by="project_id")
 
@@ -1666,13 +1763,14 @@ def update_project_table(update_project_button, add_project_button, year, teamme
         id = "projects_table",
         columns=[{"name": str(i), "id": str(i)} for i in data.columns],
         data=data.to_dict("records"),
-        style_table={"height": "400px", "overflow": "auto", "width": "1300px"},
-        style_as_list_view=True,
+        style_table={"height": "300px", "overflow": "auto", "width": "1400px"},
+        style_as_list_view=False,
         style_header={"fontweight": "bold", "font-family": "sans-serif"},
         style_cell={
             "font-family": "sans-serif", 
             'overflow': 'hidden',
-            "minWidth": 60
+            "minWidth": 60,
+            'textAlign': 'center'
             },
         row_selectable="single",
     )

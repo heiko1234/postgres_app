@@ -125,6 +125,29 @@ poetry install
 ```
 
 
+## Inspect Network
+
+```bash
+# https://docs.docker.com/network/network-tutorial-standalone/
+
+docker network ls
+
+docker network inspect general_nw
+
+docker network inspect bridge
+
+docker container ls
+
+docker exec -ti web1 ping web2
+
+docker attach postgres
+
+ip addr show
+
+```
+
+
+
 ## How to start and work with docker
 
 The best way to work with docker and to start 
@@ -137,7 +160,9 @@ docker build -t dash_app:latest .
 
 # docker run --name dash_app_test -d dash_app
 
-docker run -itd --network=general_nw --name dash_app_test -d dash_app
+docker run -itd --network=general_nw --name dash_app_test -p 8050:8050 -d dash_app 
+
+#  find app on: http://localhost:8050/dashapp/
 
 docker stop dash_app_test
 

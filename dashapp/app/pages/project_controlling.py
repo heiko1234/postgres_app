@@ -229,7 +229,7 @@ def update_controlling_table(year, month, status_list, aggregation):
             id = "controling_table",
             columns=[{"name": str(i), "id": str(i)} for i in data.columns],
             data=data.to_dict("records"),
-            style_table={"height": "6000px", "overflow": "auto", "width": "1400px"},
+            style_table={"height": "480px", "overflow": "auto", "width": "1400px"},
             style_as_list_view=True,
             style_header={"fontweight": "bold", "font-family": "sans-serif"},
             style_cell={
