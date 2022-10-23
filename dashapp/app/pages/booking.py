@@ -288,7 +288,7 @@ def overview_table(
     ):
 
     sql=f"""
-        SELECT p.project_id, p.topic, tc.topic_class, fs.founding_source
+        SELECT p.project_id, p.topic, tc.topic_class, fs.founding_source, p.start_date, p.end_date
         FROM project p
         INNER JOIN founding_sources fs
         ON p.funding_id = fs.founding_source_id
@@ -306,7 +306,7 @@ def overview_table(
     """
     data=execute_sql(sql)
 
-    data = pd.DataFrame(data, columns=["project_id", "Topic", "Topic_Class", "Founding Source"])
+    data = pd.DataFrame(data, columns=["project_id", "Topic", "Topic_Class", "Founding Source", "Project Start", "Project End"])
 
     data = data.sort_values(by="project_id")
 

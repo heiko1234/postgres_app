@@ -188,28 +188,28 @@ def update_founding(year):
         ad = ad.reset_index(drop=True)
         ad = ad["budget"][0]
     except BaseException:
-        ad = 0.001
+        ad = 0
 
     try:
         ao = data[data["status"] == "Ongoing"]
         ao = ao.reset_index(drop=True)
         ao = ao["budget"][0]
     except BaseException:
-        ao = 0.001
+        ao = 0
 
     try:
         ap = data[data["status"] == "Planned"]
         ap = ap.reset_index(drop=True)
         ap = ap["budget"][0]
     except BaseException:
-        ap = 0.001
+        ap = 0
 
     try:
         ac = data[data["status"] == "Completed"]
         ac = ac.reset_index(drop=True)
         ac = ac["budget"][0]
     except BaseException:
-        ac = 0.001
+        ac = 0
 
 
     sql = f"""

@@ -60,14 +60,14 @@ dash.register_page(__name__,)
 
 
 # topic_class: topics
-sql = """
-    SELECT topic_class FROM topic_class
-"""
-data = execute_sql(sql)
-data=pd.DataFrame(data, columns=["topic_class"])
-list_data=list(data["topic_class"])
-# list_data.sort()
-topic_class_options = get_option_list(list_data)
+# sql = """
+#     SELECT topic_class FROM topic_class
+# """
+# data = execute_sql(sql)
+# data=pd.DataFrame(data, columns=["topic_class"])
+# list_data=list(data["topic_class"])
+# # list_data.sort()
+# topic_class_options = get_option_list(list_data)
 
 
 
@@ -110,7 +110,9 @@ aproject_card = content_card_size(
                     #options=founding_sources_options, 
                     style={"width": "130px"})),
                 mini_card("Topic", a_function=dcc.Input(id="new_topic", type="text", placeholder="", style={"width": "130px"})),
-                mini_card("Topic Class", a_function=dcc.Dropdown(id="new_topic_class", options=topic_class_options, style={"width": "130px"})),
+                mini_card("Topic Class", a_function=dcc.Dropdown(id="new_topic_class", 
+                    #options=topic_class_options, 
+                    style={"width": "130px"})),
                 mini_card("Argus enabled", a_function=dcc.Dropdown(id="new_argus", value="Yes", options=[{"label": "Yes", "value": "Yes"}, {"label": "No", "value": "No"}], style={"width": "130px"})),
                 small_icon_card(id="projects_add_project", icon="add", color="white"),
                 small_icon_card(id="projects_update_project", icon="update", color="white"),
@@ -456,6 +458,28 @@ def update_founding(n_clicks, n_intervals):
     founding_sources_options = get_option_list(list_data)
 
     return founding_sources_options
+
+
+@dash.callback(
+    Output("new_topic_class", "options"),
+    [
+        Input("projects_add_project", "n_clicks"),
+        Input("projects_update_project", "n_clicks")
+        # Input("update_timer", "n_intervals"),
+    ]
+)
+def update_founding(n_clicks, update_clicks):
+
+    sql = """
+        SELECT topic_class FROM topic_class
+    """
+    data = execute_sql(sql)
+    data=pd.DataFrame(data, columns=["topic_class"])
+    list_data=list(data["topic_class"])
+    # list_data.sort()
+    topic_class_options = get_option_list(list_data)
+
+    return topic_class_options
 
 
 

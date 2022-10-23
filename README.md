@@ -1,5 +1,7 @@
 # postgres_app
 
+![app_video](./assets/postgres_project_dashapp_mp4.mp4)
+
 
 ## App Design
 
@@ -16,6 +18,8 @@ Now let's have deeper look into the design and front end of this application.
 
 The Application will interact with the Postgres DB, so each Page has a specific function or topic to deal with.
 
+![home_screen](./assets/home_hexagons.png)
+
 First we need to add a few departments or legal entities where our employees work or belong to. We also can add the required average budget for the entity or department.
 
 
@@ -24,9 +28,9 @@ First we need to add a few departments or legal entities where our employees wor
 Here you also can add a founding source and Topic classes. Remember during the construction execution some topics and founding sources are already created.
 
 
-After we have a department or entity, we also like to add new employees to these departments.
+After we have a department or entity, we also like to add new employes to these departments.
 
-![new_employee](./assets/add_a_new_employee.png)
+![new_employe](./assets/add_a_new_employee.png)
 
 Now we also can add a new project. 
 

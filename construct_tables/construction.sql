@@ -1,6 +1,7 @@
 
 
 -- Create the Database teams for the following commands: 
+
 CREATE DATABASE teams
     WITH
     OWNER = postgres
