@@ -1,8 +1,6 @@
 # postgres_app
 
 
-
-
 ## App Design
 
 ![app_design](./assets/App_Design.png)

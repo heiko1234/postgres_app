@@ -203,8 +203,6 @@ aproject_card = content_card_size(
 )
 
 
-# mini_card("Rec. Account", a_function=dcc.Input(id="rec_account", type="text", placeholder="", style={"width": "130px"})),
-
 assigned_team = content_card_size(
     id="assign_project_content",
     title="Assigned team members",
@@ -232,7 +230,6 @@ assign_project = content_card_size(
         ),
     ]
 )
-
 
 
 assigned_costcenter = content_card_size(
@@ -264,7 +261,6 @@ assign_costcenter = content_card_size(
 )
 
 
-
 assign_costcenter_project = content_card_size(
     id="assigned_costcenter_project",
     title="Assign Costcenter to Teammember",
@@ -283,7 +279,6 @@ assign_costcenter_project = content_card_size(
         ),
     ]
 )
-
 
 
 add_deadline = content_card_size(
@@ -677,7 +672,7 @@ def get_projectid_from_projectstable(selected_row, raw_data):
     return project_id
 
 
-
+# TODO: output project_id, value, select.
 # add project
 @dash.callback(
     [
