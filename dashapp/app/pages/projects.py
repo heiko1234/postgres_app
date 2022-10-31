@@ -1211,7 +1211,6 @@ def projects_add_costcenter(
                 costcenter = '{costcenter}';
             """
             execute_sql(sql)
-            data
             color = {"background-color": "green",
                 "height": "70px", 
                 "width": "70px"}
