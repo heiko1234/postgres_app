@@ -1367,12 +1367,6 @@ def update_team_costcenter_table(add_button, delete_button, project_id):
 
 
 
-# small_icon_card(id="projects_assignd_costcenter_update_button", icon="update", color="white"),
-# small_icon_card(id="projects_assignd_costcenter_delete_button", icon="delete", color="white"),
-
-# mini_card("Costcenter", a_function=dcc.Dropdown(id="costcenter_dropdown", style={"width": "130px"})),
-# mini_card("Team_Member", a_function=dcc.Dropdown(id="single_teammember_dropdown", style={"width": "130px"})),
-
 # update assigned costcentre to team
 @dash.callback(
     Output("projects_assignd_costcenter_update_button_button", "style"),
@@ -1573,7 +1567,7 @@ def projects_add_deadline(
     return color
 
 
-# small_icon_card(id="projects_delete_deadline_button", icon="delete", color="white"),
+
 # projects_remove_deadline
 @dash.callback(
     Output("projects_delete_deadline_button_button", "style"),
@@ -1798,7 +1792,6 @@ def update_project_table(update_project_button, add_project_button, year, teamme
 
 
 
-# small_icon_card(id="projects_add_budget_button", icon="add", color="white"),
 # add yearly budget to project
 @dash.callback(
     Output("projects_add_budget_button_button", "style"),
@@ -1862,7 +1855,7 @@ def projects_add_budget(
 
 
 
-# small_icon_card(id="projects_update_budget_button", icon="update", color="white"),
+
 # update yearly budget
 @dash.callback(
     Output("projects_update_budget_button_button", "style"),
@@ -1919,7 +1912,7 @@ def projects_update_budget(
 
 
 
-# small_icon_card(id="projects_delete_budget_button", icon="delete", color="white"),
+
 # delete budget
 @dash.callback(
     Output("projects_delete_budget_button_button", "style"),
@@ -2030,7 +2023,7 @@ def update_project_budget_table(project_id, add_budget, update_budget, delete_bu
 
 
 
-# small_icon_card(id="projects_add_team_budget_button", icon="add", color="white"),
+
 # budget to some project team members
 @dash.callback(
     Output("projects_add_team_budget_button_button", "style"),
@@ -2088,7 +2081,7 @@ def projects_add_budget_to_team(
     return color
 
 
-# small_icon_card(id="projects_update_team_budget_button", icon="update", color="white"),
+
 # update budget to team
 @dash.callback(
     Output("projects_update_team_budget_button_button", "style"),
@@ -2144,7 +2137,7 @@ def projects_update_budget_to_team(
     return color
 
 
-# small_icon_card(id="projects_delete_team_budget_button", icon="delete", color="white"),
+
 # delete budget for team
 @dash.callback(
     Output("projects_delete_team_budget_button_button", "style"),

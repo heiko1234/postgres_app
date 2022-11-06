@@ -86,23 +86,23 @@ aproject_card = content_card_size(
                 mini_card("Project_ID", a_function=dcc.Dropdown(id="search_projectid", 
                     options=project_options,
                     style={"width": "130px"})),
-                mini_card("Funding", a_function=dcc.Textarea(id="search_funding", 
+                mini_card("Funding", a_function=dcc.Textarea(id="search_funding", disabled=True,
                     style={"width": "130px"})),
-                mini_card("Topic", a_function=dcc.Textarea(id="search_topic", style={"width": "130px"})),
-                mini_card("Topic Class", a_function=dcc.Textarea(id="search_topic_class", 
+                mini_card("Topic", a_function=dcc.Textarea(id="search_topic", disabled=True, style={"width": "130px"})),
+                mini_card("Topic Class", a_function=dcc.Textarea(id="search_topic_class", disabled=True,
                     style={"width": "130px"})),
-                mini_card("Argus enabled", a_function=dcc.Textarea(id="search_argus", style={"width": "130px"})),
+                mini_card("Argus enabled", a_function=dcc.Textarea(id="search_argus", disabled=True, style={"width": "130px"})),
             ],
             style={"display": "flex"}
         ),
         html.Div(
             children=[
-                mini_card("Way of charging", a_function=dcc.Textarea(id="search_charging",  style={"width": "130px"})),
-                mini_card("Cost Center Resp.", a_function=dcc.Textarea(id="search_account_responsible", style={"width": "130px"})),
+                mini_card("Way of charging", a_function=dcc.Textarea(id="search_charging", disabled=True, style={"width": "130px"})),
+                mini_card("Cost Center Resp.", a_function=dcc.Textarea(id="search_account_responsible", disabled=True, style={"width": "130px"})),
                 mini_card("Start Date", a_function=dcc.DatePickerSingle(id="search_start", disabled=True, style={"width": "130px"})),
                 mini_card("End Date", a_function=dcc.DatePickerSingle(id="search_end", disabled=True, style={"width": "130px"})),
-                mini_card("Difficulty", a_function=dcc.Textarea(id="search_project_diff", style={"width": "130px"})),
-                mini_card("Project Status", a_function=dcc.Textarea(id="search_project_status", style={"width": "130px"})),
+                mini_card("Difficulty", a_function=dcc.Textarea(id="search_project_diff", disabled=True, style={"width": "130px"})),
+                mini_card("Project Status", a_function=dcc.Textarea(id="search_project_status", disabled=True, style={"width": "130px"})),
             ],
             style={"display": "flex"}
         ),
@@ -114,7 +114,7 @@ aproject_card = content_card_size(
                     size="650px", 
                     height="250px",
                     content=[
-                        html.Div(dcc.Textarea(id="search_text", style={"width": "600px", "height": "200px"}))
+                        html.Div(dcc.Textarea(id="search_text", disabled=True, style={"width": "600px", "height": "200px"}))
                     ]
                 ),
                 content_card_size(
@@ -123,7 +123,7 @@ aproject_card = content_card_size(
                     size="650px", 
                     height="250px",
                     content=[
-                        html.Div(dcc.Textarea(id="search_target", style={"width": "600px", "height": "200px"}))
+                        html.Div(dcc.Textarea(id="search_target", disabled=True, style={"width": "600px", "height": "200px"}))
                     ]
                 ),
             ],
@@ -350,7 +350,7 @@ def project_deadlines_table(project_id):
                 'overflow': 'hidden',
                 "minWidth": 60
                 },
-            row_selectable="single",
+            # row_selectable="single",
         )
 
     else: 

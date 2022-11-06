@@ -90,6 +90,14 @@ hex_benefit = hexagon_card(
     text = "Benefit",
     href="increase"
 )
+hex_search = hexagon_card(
+    id="hex_search",
+    icon = "search",
+    text = "Search",
+    href="search"
+)
+
+
 
 
 
@@ -104,6 +112,7 @@ layout = html.Div(
                     hex_booking,
                     hex_analyis,
                     hex_controlling,
+                    hex_search,
                     hex_construct,
                     hex_cost,
                     hex_benefit
