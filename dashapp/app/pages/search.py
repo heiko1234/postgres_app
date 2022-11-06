@@ -192,6 +192,18 @@ def return_search_result(search_string):
 
         statement = create_searchterm(search_string)
 
+        # sql = f"""
+        #         SELECT p.project_id, p.start_date, p.end_date, p.topic, tc.topic_class
+        #         FROM project p
+        #         INNER JOIN founding_sources fs
+        #         ON p.funding_id = fs.founding_source_id
+        #         INNER JOIN topic_class tc
+        #         ON p.topic_class_id = tc.topic_class_id
+        #         WHERE project_description ~* '{statement}'
+        #         OR
+        #         project_goals ~* '{statement}'
+        #     """
+
         sql = f"""
                 SELECT p.project_id, p.start_date, p.end_date, p.topic, tc.topic_class
                 FROM project p
@@ -199,9 +211,10 @@ def return_search_result(search_string):
                 ON p.funding_id = fs.founding_source_id
                 INNER JOIN topic_class tc
                 ON p.topic_class_id = tc.topic_class_id
-                WHERE project_description ~* '{statement}'
+                WHERE to_tsvector(project_description) @@ to_tsquery('{search_string}')
                 OR
-                project_goals ~* '{statement}'
+                to_tsvector(project_goals) @@ to_tsquery('{search_string}')
+                ;
             """
 
         search_date = execute_sql(sql)
