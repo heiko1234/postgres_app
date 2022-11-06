@@ -248,6 +248,7 @@ def project_planning(
 
 
 
+# table callback
 @dash.callback(
     Output("table_projects_planning_overview", "children"),
     [
@@ -255,6 +256,7 @@ def project_planning(
         Input("projects_planning_teammember", "value"),
         Input("planning_delete_button", "n_clicks"),
         Input("planning_add_button", "n_clicks"),
+        Input("planning_update_button", "n_clicks"),
     ]
     # , prevent_initial_call=True
     , suppress_callback_exceptions=True
@@ -263,8 +265,11 @@ def project_table(
     year,
     teammember,
     delete_button,
-    add_button
+    add_button,
+    update_button
     ):
+
+    sleep(0.2)
 
     if teammember != None:
         # SELECT p.project_id, p.topic, tc.topic_class, fs.founding_source, pbp.year
@@ -364,9 +369,18 @@ def project_table(
         Input("projects_planning_teammember", "value"),
         Input("planning_delete_button", "n_clicks"),
         Input("planning_add_button", "n_clicks"),
+        Input("planning_update_button", "n_clicks"),
     ]
 )
-def create_gant_fig(year, teammember, delete_button, add_button):
+def create_gant_fig(
+    year,
+    teammember,
+    delete_button,
+    add_button,
+    update_button
+    ):
+
+    sleep(0.2)
 
     if teammember != None:
         # SELECT p.project_id, p.topic, tc.topic_class, fs.founding_source, pbp.year
@@ -636,7 +650,7 @@ def selection_optionlist(
 
 
 
-
+# select from table
 @dash.callback(
     Output("planning_projectid", "value"),
     [
@@ -646,21 +660,131 @@ def selection_optionlist(
 )
 def get_projectid_from_projectstable(selected_row, raw_data):
 
-    mdata = pd.DataFrame(data = raw_data)
+    if selected_row != None and raw_data != None:
 
-    scnames=["project_id", "Topic", "Topic_Class", "Founding Source", "Start", "End"]
+        mdata = pd.DataFrame(data = raw_data)
 
-    selected_data = mdata.loc[selected_row, scnames]
-    selected_data = selected_data.reset_index(drop= True)
+        scnames=["project_id", "Topic", "Topic_Class", "Founding Source", "Start", "End"]
 
-    project_id = selected_data.loc[0, "project_id"]
+        selected_data = mdata.loc[selected_row, scnames]
+        selected_data = selected_data.reset_index(drop= True)
+
+        project_id = selected_data.loc[0, "project_id"]
+
+    else:
+        project_id = None
 
     return project_id
 
 
 
+# update project on date
+@dash.callback(
+    Output("planning_update_button_button", "style"),
+    [
+        Input("planning_update_button", "n_clicks"),
+        Input("planning_update_timer", "n_intervals"),
+        State("planning_update_button_button", "style"),
+        State("planning_start", "date"),
+        State("planning_end", "date"),
+        State("planning_projectid", "value"),
+    ]
+    , prevent_initial_call=True
+    , suppress_callback_exceptions=True
+)
+def projects_update_project(
+    n_clicks, 
+    n_interval, 
+    style,
+    start,
+    end,
+    project_id
+    ):
+
+    button_id = ctx.triggered_id
+
+    if ((button_id == "update_timer") and (style['background-color'] == "green")):
+        color = {"background-color": "white",
+            "height": "70px", 
+            "width": "70px"}
+
+    elif (button_id == "planning_update_button"):
+
+        sql = f"""
+            UPDATE project
+            SET
+            start_date = '{start}',
+            end_date = '{end}'
+            WHERE project_id = '{project_id}';
+        """
+        data = execute_sql(sql)
+        data
+
+        color = {"background-color": "green",
+            "height": "70px", 
+            "width": "70px"}
+
+    else: 
+        color = {"background-color": "white",
+            "height": "70px", 
+            "width": "70px"}
+
+    return color
 
 
 
-# Input("planning_delete_button", "n_clicks"),
-# Input("planning_add_button", "n_clicks"),
+@dash.callback(
+    [
+        Output("planning_start", "date"),
+        Output("planning_end", "date")
+    ],
+    [
+        Input("planning_projectid", "value"),
+    ]
+    , prevent_initial_call=True
+    , suppress_callback_exceptions=True
+)
+def select_projectid_date(
+    project_id,
+):
+
+    if project_id != None:
+
+        sql = f"""
+            SELECT p.project_id, p.topic, p.start_date, p.end_date
+            FROM project p
+            WHERE p.project_id = '{project_id}';
+        """
+
+        data = execute_sql(sql)
+
+        data = pd.DataFrame(data, columns=["project_id", "topic", "start", "end"])
+
+        start = data.loc[0, "start"]
+        end = data.loc[0, "end"]
+
+    else:
+        start = end = None
+
+    return start, end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

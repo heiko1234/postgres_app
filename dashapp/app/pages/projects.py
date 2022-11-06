@@ -609,9 +609,6 @@ def create_gant_fig(year, teammember, add_button, delete_button):
     return dcc.Graph(figure=fig)
 
 
-
-
-
 # project_drop down lists: team & year
 @dash.callback(
     [
