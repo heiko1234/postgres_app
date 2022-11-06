@@ -96,7 +96,12 @@ hex_search = hexagon_card(
     text = "Search",
     href="search"
 )
-
+hex_planning = hexagon_card(
+    id="hex_planning",
+    icon = "project_planning",
+    text = "Planning",
+    href="planning"
+)
 
 
 
@@ -109,6 +114,7 @@ layout = html.Div(
                 [
                     hex_team,
                     hex_idea,
+                    hex_planning,
                     hex_booking,
                     hex_analyis,
                     hex_controlling,
