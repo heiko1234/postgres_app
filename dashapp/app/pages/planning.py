@@ -47,6 +47,8 @@ dash.register_page(__name__,)
 this_year=datetime.datetime.today().year
 this_month=datetime.datetime.today().month
 
+callback_timer = dcc.Interval(id ="planning_update_timer",  interval = 4*1000)  #1000 ms * 4 = 4sec
+
 
 # years dropdown
 sql = f"""
@@ -153,7 +155,7 @@ assign_project = content_card_size(
         html.Div(
             children=[
                 mini_card("Project ID", a_function=dcc.Dropdown(id="planning_projectid", style={"width": "130px"})),
-                mini_card("Team Member", a_function=dcc.Dropdown(id="planning_single_teammember", style={"width": "130px"})),
+                mini_card("Team Member", a_function=dcc.Dropdown(id="planning_single_teammember", options=team_members_options, style={"width": "130px"})),
                 small_icon_card(id="planning_add_button", icon="add", color="white"),
                 small_icon_card(id="planning_delete_button", icon="delete", color="white"),
             ],
@@ -190,6 +192,7 @@ layout = html.Div(
             shift_project
         ], style={"display": "flex"}),
         project_card,
+        callback_timer
     ]
 )
 
@@ -201,9 +204,15 @@ layout = html.Div(
     Output("planning_fig_project_planning", "children"),
     [
         Input("projects_planning_year", "value"),
+        Input("planning_delete_button", "n_clicks"),
+        Input("planning_add_button", "n_clicks"),
     ]
 )
-def project_planning(year):
+def project_planning(
+    year,
+    delete_button,
+    add_button
+    ):
 
     date = datetime.datetime.today().strftime('%Y-%m-%d')
 
@@ -244,11 +253,18 @@ def project_planning(year):
     [
         Input("projects_planning_year", "value"),
         Input("projects_planning_teammember", "value"),
+        Input("planning_delete_button", "n_clicks"),
+        Input("planning_add_button", "n_clicks"),
     ]
     # , prevent_initial_call=True
     , suppress_callback_exceptions=True
 )
-def project_table(year, teammember):
+def project_table(
+    year,
+    teammember,
+    delete_button,
+    add_button
+    ):
 
     if teammember != None:
         # SELECT p.project_id, p.topic, tc.topic_class, fs.founding_source, pbp.year
@@ -346,9 +362,11 @@ def project_table(year, teammember):
     [
         Input("projects_planning_year", "value"),
         Input("projects_planning_teammember", "value"),
+        Input("planning_delete_button", "n_clicks"),
+        Input("planning_add_button", "n_clicks"),
     ]
 )
-def create_gant_fig(year, teammember):
+def create_gant_fig(year, teammember, delete_button, add_button):
 
     if teammember != None:
         # SELECT p.project_id, p.topic, tc.topic_class, fs.founding_source, pbp.year
@@ -424,15 +442,225 @@ def create_gant_fig(year, teammember):
 
 
 
+# Assign Team to project
+@dash.callback(
+    Output("planning_add_button_button", "style"),
+    [
+        Input("planning_add_button", "n_clicks"),
+        Input("planning_update_timer", "n_intervals"),
+        State("planning_add_button_button", "style"),
+        State("planning_projectid", "value"),
+        State("planning_single_teammember", "value"),
+    ]
+    , prevent_initial_call=True
+    , suppress_callback_exceptions=True
+)
+def projects_assign_team_add(
+    n_clicks, 
+    n_interval, 
+    style,
+    project_id,
+    single_teammember
+    ):
+
+    button_id = ctx.triggered_id
+
+    if ((button_id == "update_timer") and (style['background-color'] == "green")):
+        color = {"background-color": "white",
+            "height": "70px", 
+            "width": "70px"}
+
+    elif (button_id == "planning_add_button"):
+
+        if ((project_id != None) and (single_teammember != None)):
+
+            sql = f"""
+                INSERT INTO project_team_members(project_id, team_id) VALUES
+                (
+                    (SELECT project_id FROM project WHERE project_id = '{project_id}'),
+                    (SELECT team_id FROM team_members WHERE full_name = '{single_teammember}')
+                )
+            """
+            execute_sql(sql)
+
+            color = {"background-color": "green",
+                "height": "70px", 
+                "width": "70px"}
+        
+        else: 
+            color = {"background-color": "white",
+                "height": "70px", 
+                "width": "70px"}
+
+    else: 
+        color = {"background-color": "white",
+            "height": "70px", 
+            "width": "70px"}
+
+    return color
+
+
+
+
+# remove assiged team member from project
+@dash.callback(
+    Output("planning_delete_button_button", "style"),
+    [
+        Input("planning_delete_button", "n_clicks"),
+        Input("planning_update_timer", "n_intervals"),
+        State("planning_delete_button_button", "style"),
+        State("planning_projectid", "value"),
+        State("planning_single_teammember", "value"),
+    ]
+    , prevent_initial_call=True
+    , suppress_callback_exceptions=True
+)
+def projects_remove_team(
+    n_clicks, 
+    n_interval, 
+    style,
+    project_id,
+    teammember
+    ):
+
+    button_id = ctx.triggered_id
+
+    if ((button_id == "update_timer") and (style['background-color'] == "green")):
+        color = {"background-color": "white",
+            "height": "70px", 
+            "width": "70px"}
+
+    elif (button_id == "planning_delete_button"):
+
+        if ((project_id != None) and (teammember != None)):
+
+            sql = f"""
+                DELETE FROM project_team_members
+                WHERE
+                project_id in (SELECT project_id FROM project WHERE project_id = '{project_id}')
+                AND
+                team_id in (SELECT team_id FROM team_members WHERE full_name = '{teammember}');
+            """
+            execute_sql(sql)
+
+            color = {"background-color": "green",
+                "height": "70px", 
+                "width": "70px"}
+
+    else: 
+        color = {"background-color": "white",
+            "height": "70px", 
+            "width": "70px"}
+
+    return color
+
+
+
+
+@dash.callback(
+    Output("planning_projectid", "options"),
+    [
+        Input("projects_planning_year", "value"),
+        Input("projects_planning_teammember", "value"),
+        Input("planning_delete_button", "n_clicks"),
+        Input("planning_add_button", "n_clicks"),
+    ]
+    , prevent_initial_call=False
+    , suppress_callback_exceptions=True
+)
+def selection_optionlist(
+    year,
+    teammember,
+    delete_button,
+    add_button
+):
+    if teammember != None:
+        # SELECT p.project_id, p.topic, tc.topic_class, fs.founding_source, pbp.year
+        sql=f"""
+            
+            SELECT p.project_id, tm.full_name, p.topic, tc.topic_class, fs.founding_source, p.start_date, p.end_date
+            FROM project p
+            INNER JOIN founding_sources fs
+            ON p.funding_id = fs.founding_source_id
+            INNER JOIN topic_class tc
+            ON p.topic_class_id = tc.topic_class_id
+            INNER JOIN project_team_members ptm
+            ON p.project_id = ptm.project_id
+            INNER JOIN team_members tm
+            ON tm.team_id = ptm.team_id
+            INNER JOIN project_budget_planning pbp
+            ON pbp.project_id = p.project_id
+            WHERE pbp.year = '{year}'
+            AND
+            tm.team_id in (SELECT team_id FROM team_members WHERE full_name = '{teammember}')
+        """
+
+        data=execute_sql(sql)
+
+        data = pd.DataFrame(data, columns=["project_id", "fullname", "Task", "Topic", "Founding Source", "Start", "Finish"])
+
+    else:
+        year_max = str(year)+"-12-30"
+        year_min= str(year)+"-01-01"
+
+        sql=f"""
+            SELECT p.project_id, p.topic, tc.topic_class, fs.founding_source, p.start_date, p.end_date
+            FROM project p
+            INNER JOIN founding_sources fs
+            ON p.funding_id = fs.founding_source_id
+            INNER JOIN topic_class tc
+            ON p.topic_class_id = tc.topic_class_id
+            LEFT JOIN project_team_members ptm
+            ON p.project_id = ptm.project_id
+            INNER JOIN project_budget_planning pbp
+            ON pbp.project_id = p.project_id
+            WHERE p.end_date <= '{year_max}'
+            AND
+            ptm.team_id IS NULL
+            OR
+            p.start_date >= '{year_min}'
+            AND
+            ptm.team_id IS NULL
+        """
+
+        data=execute_sql(sql)
+
+        data = pd.DataFrame(data, columns=["project_id", "Task", "Topic", "Founding Source", "Start", "Finish"])
+
+
+    list_data=list(data["project_id"])
+    list_data.sort()
+    option_list = get_option_list(list_data)
+
+    return option_list
+
+
+
+
+@dash.callback(
+    Output("planning_projectid", "value"),
+    [
+        Input("planning_projects_table", "selected_rows"),
+        Input("planning_projects_table", "data")
+    ]
+)
+def get_projectid_from_projectstable(selected_row, raw_data):
+
+    mdata = pd.DataFrame(data = raw_data)
+
+    scnames=["project_id", "Topic", "Topic_Class", "Founding Source", "Start", "End"]
+
+    selected_data = mdata.loc[selected_row, scnames]
+    selected_data = selected_data.reset_index(drop= True)
+
+    project_id = selected_data.loc[0, "project_id"]
+
+    return project_id
 
 
 
 
 
 
-
-
-
-
-
-
+# Input("planning_delete_button", "n_clicks"),
+# Input("planning_add_button", "n_clicks"),

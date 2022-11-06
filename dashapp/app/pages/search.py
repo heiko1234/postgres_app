@@ -177,6 +177,7 @@ layout = html.Div(
 )
 
 
+# Search Results in description and goals, exact
 @dash.callback(
     Output("load_search_results", "children"),
     [
