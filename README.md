@@ -229,5 +229,12 @@ https://blog.avada.io/css/hexagons
 https://css-tricks.com/hexagons-and-beyond-flexible-responsive-grid-patterns-sans-media-queries/
 
 
+# Postgres check if Table exists
+
+https://database.guide/5-ways-to-check-if-a-table-exists-in-postgresql/
+
+https://commandprompt.com/education/how-to-checkverify-if-a-specific-table-exists-in-postgresql-database/
+
+
 
 
